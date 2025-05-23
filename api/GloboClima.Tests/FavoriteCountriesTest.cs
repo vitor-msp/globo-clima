@@ -2,15 +2,6 @@ namespace GloboClima.Tests;
 
 public class FavoriteCountriesTest : BaseTest
 {
-    private readonly FavoriteCountriesController _controller;
-
-    public FavoriteCountriesTest() : base()
-    {
-        _controller = MakeSut();
-    }
-
-    private FavoriteCountriesController MakeSut() => new(_context);
-
     protected override string GetTableName() => "favorite-countries";
     protected override string GetKeyName() => "Id";
 
@@ -18,11 +9,12 @@ public class FavoriteCountriesTest : BaseTest
     public async Task ShouldCreateFavoriteCountry()
     {
         var input = new CreateFavoriteCountryInput() { Cioc = "BRA" };
-        var output = await _controller.CreateFavoriteCountry(input);
-        var outputResult = Assert.IsType<OkObjectResult>(output.Result);
-        var outputContent = Assert.IsType<CreateFavoriteCountryOutput>(outputResult.Value);
-        Assert.NotEqual(default, outputContent.FavoriteCountryId);
-        var favoriteCountry = await _context.LoadAsync<FavoriteCountry>(outputContent.FavoriteCountryId);
+        var response = await _httpClient.PostAsJsonAsync("/favorite-countries", input);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var output = await response.Content.ReadFromJsonAsync<CreateFavoriteCountryOutput>();
+        Assert.NotNull(output);
+        Assert.NotEqual(default, output.FavoriteCountryId);
+        var favoriteCountry = await _dbContext.LoadAsync<FavoriteCountry>(output.FavoriteCountryId);
         Assert.NotNull(favoriteCountry);
         Assert.Equal(input.Cioc, favoriteCountry.Cioc);
     }
@@ -31,10 +23,10 @@ public class FavoriteCountriesTest : BaseTest
     public async Task ShouldDeleteFavoriteCountry()
     {
         var savedFavoriteCountry = new FavoriteCountry() { Cioc = "BRA" };
-        await _context.SaveAsync(savedFavoriteCountry);
-        var output = await _controller.DeleteFavoriteCountry(savedFavoriteCountry.Id);
-        Assert.IsType<NoContentResult>(output);
-        var favoriteCountry = await _context.LoadAsync<FavoriteCountry>(savedFavoriteCountry.Id);
+        await _dbContext.SaveAsync(savedFavoriteCountry);
+        var response = await _httpClient.DeleteAsync($"/favorite-countries/{savedFavoriteCountry.Id}");
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        var favoriteCountry = await _dbContext.LoadAsync<FavoriteCountry>(savedFavoriteCountry.Id);
         Assert.Null(favoriteCountry);
     }
 
@@ -42,9 +34,9 @@ public class FavoriteCountriesTest : BaseTest
     public async Task ShouldNotDeleteInexistingFavoriteCountry()
     {
         var favoriteCountryId = Guid.NewGuid();
-        var output = await _controller.DeleteFavoriteCountry(favoriteCountryId);
-        Assert.IsType<NotFoundResult>(output);
-        var favoriteCountry = await _context.LoadAsync<FavoriteCountry>(favoriteCountryId);
+        var response = await _httpClient.DeleteAsync($"/favorite-countries/{favoriteCountryId}");
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        var favoriteCountry = await _dbContext.LoadAsync<FavoriteCountry>(favoriteCountryId);
         Assert.Null(favoriteCountry);
     }
 
@@ -53,16 +45,17 @@ public class FavoriteCountriesTest : BaseTest
     {
         var brazil = new FavoriteCountry() { Cioc = "BRA" };
         var argentina = new FavoriteCountry() { Cioc = "ARG" };
-        await _context.SaveAsync(brazil);
-        await _context.SaveAsync(argentina);
-        var output = await _controller.ListFavoriteCountries();
-        var outputResult = Assert.IsType<OkObjectResult>(output.Result);
-        var outputContent = Assert.IsType<List<FavoriteCountry>>(outputResult.Value);
-        Assert.Equal(2, outputContent.Count);
-        var savedBrazil = outputContent.Find(country => country.Id == brazil.Id);
+        await _dbContext.SaveAsync(brazil);
+        await _dbContext.SaveAsync(argentina);
+        var response = await _httpClient.GetAsync("/favorite-countries");
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var output = await response.Content.ReadFromJsonAsync<List<FavoriteCountry>>();
+        Assert.NotNull(output);
+        Assert.Equal(2, output.Count);
+        var savedBrazil = output.Find(country => country.Id == brazil.Id);
         Assert.NotNull(savedBrazil);
         Assert.Equal(brazil.Cioc, savedBrazil.Cioc);
-        var savedArgentina = outputContent.Find(country => country.Id == argentina.Id);
+        var savedArgentina = output.Find(country => country.Id == argentina.Id);
         Assert.NotNull(savedArgentina);
         Assert.Equal(argentina.Cioc, savedArgentina.Cioc);
     }

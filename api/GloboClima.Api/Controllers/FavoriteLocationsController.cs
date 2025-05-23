@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace GloboClima.Api.Controllers;
 
 [ApiController]
-[Route("locations/favorites")]
+[Route("favorite-locations")]
 public class FavoriteLocationsController(IDynamoDBContext context) : ControllerBase
 {
     private readonly IDynamoDBContext _context = context;

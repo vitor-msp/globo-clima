@@ -2,19 +2,22 @@ namespace GloboClima.Tests;
 
 public abstract class BaseTest : IAsyncLifetime
 {
-    protected readonly IAmazonDynamoDB _client;
-    protected readonly IDynamoDBContext _context;
+    protected readonly IAmazonDynamoDB _dbClient;
+    protected readonly IDynamoDBContext _dbContext;
+    protected readonly HttpClient _httpClient;
 
     protected BaseTest()
     {
-        var config = new AmazonDynamoDBConfig
+        _dbClient = new AmazonDynamoDBClient(new AmazonDynamoDBConfig
         {
             ServiceURL = "http://localhost:8000"
-        };
-        _client = new AmazonDynamoDBClient(config);
+        });
+
 #pragma warning disable CS0618 // Type or member is obsolete
-        _context = new DynamoDBContext(_client);
+        _dbContext = new DynamoDBContext(_dbClient);
 #pragma warning restore CS0618 // Type or member is obsolete
+
+        _httpClient = new CustomWebApplicationFactory(_dbClient, _dbContext).CreateClient();
     }
 
     public async Task InitializeAsync() => await CreateTable(GetTableName(), GetKeyName());
@@ -23,11 +26,11 @@ public abstract class BaseTest : IAsyncLifetime
     {
         try
         {
-            await _client.DescribeTableAsync(tableName);
+            await _dbClient.DescribeTableAsync(tableName);
         }
         catch (ResourceNotFoundException)
         {
-            await _client.CreateTableAsync(new CreateTableRequest
+            await _dbClient.CreateTableAsync(new CreateTableRequest
             {
                 TableName = tableName,
                 AttributeDefinitions = new List<AttributeDefinition>()
@@ -44,13 +47,13 @@ public abstract class BaseTest : IAsyncLifetime
         }
     }
 
-    public async Task DisposeAsync() => await _client.DeleteTableAsync(GetTableName());
+    public async Task DisposeAsync() => await _dbClient.DeleteTableAsync(GetTableName());
 
     private async Task WaitForTableActive(string tableName)
     {
         while (true)
         {
-            var resp = await _client.DescribeTableAsync(tableName);
+            var resp = await _dbClient.DescribeTableAsync(tableName);
             if (resp.Table.TableStatus == "ACTIVE") break;
             await Task.Delay(500);
         }

@@ -2,30 +2,6 @@ namespace GloboClima.Tests;
 
 public class UsersTest : BaseTest
 {
-    private readonly UsersController _controller;
-    private readonly IConfiguration _configuration;
-
-    public UsersTest() : base()
-    {
-        _configuration = LoadConfiguration();
-        _controller = MakeSut();
-    }
-
-    private static IConfiguration LoadConfiguration()
-        => new ConfigurationBuilder()
-            .SetBasePath(AppContext.BaseDirectory)
-            .AddJsonFile("appsettings.Development.json", optional: false, reloadOnChange: true)
-            .Build();
-
-    private UsersController MakeSut()
-    {
-        var configuration = new TokenConfiguration();
-        _configuration.GetSection("Token").Bind(configuration);
-        var options = Options.Create(configuration);
-        var tokenService = new TokenService(options);
-        return new(_context, _client, tokenService);
-    }
-
     protected override string GetTableName() => "users";
     protected override string GetKeyName() => "Username";
 
@@ -39,9 +15,9 @@ public class UsersTest : BaseTest
             Password = "fulanO.123@",
             PasswordConfirmation = "fulanO.123@"
         };
-        var output = await _controller.CreateUser(input);
-        Assert.IsType<CreatedResult>(output);
-        var user = await _context.LoadAsync<User>("fulano");
+        var response = await _httpClient.PostAsJsonAsync("/users", input);
+        response.EnsureSuccessStatusCode();
+        var user = await _dbContext.LoadAsync<User>("fulano");
         Assert.NotNull(user);
         Assert.Equal(input.Name, user.Name);
         Assert.Equal(input.Username, user.Username);
@@ -59,9 +35,9 @@ public class UsersTest : BaseTest
             Password = "fulano0.123@",
             PasswordConfirmation = "fulano0.123@"
         };
-        var output = await _controller.CreateUser(input);
-        Assert.IsType<ConflictResult>(output);
-        var user = await _context.LoadAsync<User>("fulano");
+        var response = await _httpClient.PostAsJsonAsync("/users", input);
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+        var user = await _dbContext.LoadAsync<User>("fulano");
         Assert.NotNull(user);
         Assert.Equal(existingUser.Name, user.Name);
         Assert.Equal(existingUser.Username, user.Username);
@@ -77,11 +53,12 @@ public class UsersTest : BaseTest
             Username = "fulano",
             Password = "fulano0.123@",
         };
-        var output = await _controller.Login(input);
-        var outputResult = Assert.IsType<OkObjectResult>(output.Result);
-        var outputContent = Assert.IsType<LoginOutput>(outputResult.Value);
+        var response = await _httpClient.PostAsJsonAsync("/login", input);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var output = await response.Content.ReadFromJsonAsync<LoginOutput>();
+        Assert.NotNull(output);
         var jwtPattern = @"^[^\.\s]+\.[^\.\s]+\.[^\.\s]+$";
-        Assert.True(Regex.Match(outputContent.AccessToken, jwtPattern).Success);
+        Assert.True(Regex.Match(output.AccessToken, jwtPattern).Success);
     }
 
     [Fact]
@@ -92,8 +69,8 @@ public class UsersTest : BaseTest
             Username = "fulano",
             Password = "fulano0.123@",
         };
-        var output = await _controller.Login(input);
-        Assert.IsType<UnprocessableEntityResult>(output.Result);
+        var response = await _httpClient.PostAsJsonAsync("/login", input);
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
     }
 
     [Fact]
@@ -105,8 +82,8 @@ public class UsersTest : BaseTest
             Username = "fulano",
             Password = "incorrect-password",
         };
-        var output = await _controller.Login(input);
-        Assert.IsType<UnprocessableEntityResult>(output.Result);
+        var response = await _httpClient.PostAsJsonAsync("/login", input);
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
     }
 
     public async Task<User> CreateUser()
@@ -117,7 +94,7 @@ public class UsersTest : BaseTest
             Username = "fulano",
             Password = "fulano0.123@"
         };
-        await _context.SaveAsync(existingUser);
+        await _dbContext.SaveAsync(existingUser);
         return existingUser;
     }
 }

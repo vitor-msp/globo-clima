@@ -1,8 +1,6 @@
 global using Xunit;
-global using Microsoft.AspNetCore.Mvc;
 global using Amazon.DynamoDBv2;
 global using Amazon.DynamoDBv2.DataModel;
-global using GloboClima.Api.Controllers;
 global using GloboClima.Api.Inputs;
 global using GloboClima.Api.Schema;
 global using Amazon.DynamoDBv2.Model;
@@ -10,4 +8,5 @@ global using System.Text.RegularExpressions;
 global using GloboClima.Api.Configuration;
 global using GloboClima.Api.Services.Implementation;
 global using Microsoft.Extensions.Configuration;
-global using Microsoft.Extensions.Options;
+global using Microsoft.AspNetCore.Mvc.Testing;
+global using System.Net;
