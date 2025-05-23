@@ -1,4 +1,4 @@
-namespace GloboClima.Tests;
+namespace GloboClima.Tests.Unit;
 
 public class TextHasherServiceTest
 {

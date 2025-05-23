@@ -1,7 +1,4 @@
-using GloboClima.Api.Extensions;
-using GloboClima.Api.Services.Contract;
-
-namespace GloboClima.Tests;
+namespace GloboClima.Tests.Integration;
 
 public class CustomWebApplicationFactory(IConfiguration configuration, IAmazonDynamoDB dbClient, IDynamoDBContext dbContext)
     : WebApplicationFactory<Program>

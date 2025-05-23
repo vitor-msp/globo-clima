@@ -14,3 +14,5 @@ global using System.IdentityModel.Tokens.Jwt;
 global using System.Security.Claims;
 global using System.Text;
 global using Microsoft.IdentityModel.Tokens;
+global using GloboClima.Api.Extensions;
+global using GloboClima.Api.Services.Contract;
