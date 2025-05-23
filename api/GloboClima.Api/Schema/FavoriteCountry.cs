@@ -20,12 +20,9 @@ public partial class FavoriteCountry
         get => _cioc;
         init
         {
-            if (!CiocRegex().Match(value).Success)
+            if (!Regex.Match(value, CiocPattern).Success)
                 throw new DomainException("Cioc must be a valid country IOC.");
             _cioc = value;
         }
     }
-
-    [GeneratedRegex(CiocPattern)]
-    private static partial Regex CiocRegex();
 }
