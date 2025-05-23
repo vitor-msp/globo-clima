@@ -47,7 +47,7 @@ public class UsersController(IDynamoDBContext context, IAmazonDynamoDB dbClient,
         try
         {
             var user = await _context.LoadAsync<User>(input.Username);
-            if (user is null)
+            if (user is null || !user.Password.Equals(input.Password))
                 return UnprocessableEntity();
             var accessToken = _tokenService.GenerateJwt(user);
             return Ok(new LoginOutput() { AccessToken = accessToken });

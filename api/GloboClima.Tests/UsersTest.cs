@@ -111,4 +111,23 @@ public class UsersTest : BaseTest
         var output = await _controller.Login(input);
         Assert.IsType<UnprocessableEntityResult>(output.Result);
     }
+
+    [Fact]
+    public async Task ShouldNotLoginUserWithInvalidPassword()
+    {
+        var existingUser = new User()
+        {
+            Name = "fulano de tal",
+            Username = "fulano",
+            Password = "fulano0.123@"
+        };
+        await _context.SaveAsync(existingUser);
+        var input = new LoginInput()
+        {
+            Username = "fulano",
+            Password = "incorrect-password",
+        };
+        var output = await _controller.Login(input);
+        Assert.IsType<UnprocessableEntityResult>(output.Result);
+    }
 }
