@@ -4,7 +4,7 @@ namespace GloboClima.Tests;
 
 public abstract class BaseTest : IAsyncLifetime
 {
-    private readonly IAmazonDynamoDB _client;
+    protected readonly IAmazonDynamoDB _client;
     protected readonly IDynamoDBContext _context;
 
     protected BaseTest()
