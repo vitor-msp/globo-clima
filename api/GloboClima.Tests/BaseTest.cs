@@ -17,40 +17,45 @@ public abstract class BaseTest : IAsyncLifetime
 #pragma warning restore CS0618 // Type or member is obsolete
     }
 
-    public async Task InitializeAsync()
+    public async Task InitializeAsync() => await CreateTable(GetTableName(), GetKeyName());
+
+    private async Task CreateTable(string tableName, string keyName)
     {
         try
         {
-            await _client.DescribeTableAsync("users");
+            await _client.DescribeTableAsync(tableName);
         }
         catch (ResourceNotFoundException)
         {
             await _client.CreateTableAsync(new CreateTableRequest
             {
-                TableName = "users",
-                AttributeDefinitions = new List<AttributeDefinition>
-            {
-                new AttributeDefinition("Username", ScalarAttributeType.S)
-            },
-                KeySchema = new List<KeySchemaElement>
-            {
-                new KeySchemaElement("Username", KeyType.HASH)
-            },
+                TableName = tableName,
+                AttributeDefinitions = new List<AttributeDefinition>()
+                {
+                    new AttributeDefinition(keyName, ScalarAttributeType.S)
+                },
+                KeySchema = new List<KeySchemaElement>()
+                {
+                    new KeySchemaElement(keyName, KeyType.HASH)
+                },
                 ProvisionedThroughput = new ProvisionedThroughput(5, 5)
             });
-            await WaitForTableActive();
+            await WaitForTableActive(tableName);
         }
     }
 
-    public async Task DisposeAsync() => await _client.DeleteTableAsync("users");
+    public async Task DisposeAsync() => await _client.DeleteTableAsync(GetTableName());
 
-    private async Task WaitForTableActive()
+    private async Task WaitForTableActive(string tableName)
     {
         while (true)
         {
-            var resp = await _client.DescribeTableAsync("users");
+            var resp = await _client.DescribeTableAsync(tableName);
             if (resp.Table.TableStatus == "ACTIVE") break;
             await Task.Delay(500);
         }
     }
+
+    protected abstract string GetTableName();
+    protected abstract string GetKeyName();
 }

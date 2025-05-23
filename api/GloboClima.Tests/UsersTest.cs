@@ -26,6 +26,9 @@ public class UsersTest : BaseTest
         return new(_context, _client, tokenService);
     }
 
+    protected override string GetTableName() => "users";
+    protected override string GetKeyName() => "Username";
+
     [Fact]
     public async Task ShouldCreateUser()
     {
