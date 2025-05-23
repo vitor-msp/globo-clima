@@ -13,4 +13,6 @@ public class User
 
     [DynamoDBProperty]
     public required string Password { get; init; }
+
+    public bool PasswordIsCorrect(string password) => Password.Equals(password);
 }

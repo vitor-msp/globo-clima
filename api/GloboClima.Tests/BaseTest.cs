@@ -1,5 +1,3 @@
-using Amazon.DynamoDBv2.Model;
-
 namespace GloboClima.Tests;
 
 public abstract class BaseTest : IAsyncLifetime

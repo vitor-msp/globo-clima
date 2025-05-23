@@ -1,10 +1,3 @@
-using System.Text.RegularExpressions;
-using GloboClima.Api.Configuration;
-using GloboClima.Api.Services.Implementation;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Options;
-
 namespace GloboClima.Tests;
 
 public class UsersTest : BaseTest
@@ -55,13 +48,7 @@ public class UsersTest : BaseTest
     [Fact]
     public async Task ShouldNotCreateDuplicatedUser()
     {
-        var existingUser = new User()
-        {
-            Name = "fulano de tal",
-            Username = "fulano",
-            Password = "fulano0.123@"
-        };
-        await _context.SaveAsync(existingUser);
+        var existingUser = await CreateUser();
         var input = new CreateUserInput()
         {
             Name = "fulano de tal",
@@ -81,13 +68,7 @@ public class UsersTest : BaseTest
     [Fact]
     public async Task ShouldLoginUser()
     {
-        var existingUser = new User()
-        {
-            Name = "fulano de tal",
-            Username = "fulano",
-            Password = "fulano0.123@"
-        };
-        await _context.SaveAsync(existingUser);
+        await CreateUser();
         var input = new LoginInput()
         {
             Username = "fulano",
@@ -115,13 +96,7 @@ public class UsersTest : BaseTest
     [Fact]
     public async Task ShouldNotLoginUserWithInvalidPassword()
     {
-        var existingUser = new User()
-        {
-            Name = "fulano de tal",
-            Username = "fulano",
-            Password = "fulano0.123@"
-        };
-        await _context.SaveAsync(existingUser);
+        await CreateUser();
         var input = new LoginInput()
         {
             Username = "fulano",
@@ -129,5 +104,17 @@ public class UsersTest : BaseTest
         };
         var output = await _controller.Login(input);
         Assert.IsType<UnprocessableEntityResult>(output.Result);
+    }
+
+    public async Task<User> CreateUser()
+    {
+        var existingUser = new User()
+        {
+            Name = "fulano de tal",
+            Username = "fulano",
+            Password = "fulano0.123@"
+        };
+        await _context.SaveAsync(existingUser);
+        return existingUser;
     }
 }
