@@ -17,10 +17,7 @@ public class FavoriteCountriesTest : BaseTest
     [Fact]
     public async Task ShouldCreateFavoriteCountry()
     {
-        var input = new CreateFavoriteCountryInput()
-        {
-            Cioc = "BRA",
-        };
+        var input = new CreateFavoriteCountryInput() { Cioc = "BRA" };
         var output = await _controller.CreateFavoriteCountry(input);
         var outputResult = Assert.IsType<OkObjectResult>(output.Result);
         var outputContent = Assert.IsType<CreateFavoriteCountryOutput>(outputResult.Value);

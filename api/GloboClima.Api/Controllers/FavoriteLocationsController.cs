@@ -7,19 +7,19 @@ using Microsoft.AspNetCore.Mvc;
 namespace GloboClima.Api.Controllers;
 
 [ApiController]
-[Route("countries/favorites")]
-public class FavoriteCountriesController(IDynamoDBContext context) : ControllerBase
+[Route("locations/favorites")]
+public class FavoriteLocationsController(IDynamoDBContext context) : ControllerBase
 {
     private readonly IDynamoDBContext _context = context;
 
     [HttpPost]
-    public async Task<ActionResult<CreateFavoriteCountryOutput>> CreateFavoriteCountry([FromBody] CreateFavoriteCountryInput input)
+    public async Task<ActionResult<CreateFavoriteLocationOutput>> CreateFavoriteLocation([FromBody] CreateFavoriteLocationInput input)
     {
         try
         {
-            var favoriteCountry = input.GetFavoriteCountry();
-            await _context.SaveAsync(favoriteCountry);
-            return Ok(new CreateFavoriteCountryOutput() { FavoriteCountryId = favoriteCountry.Id });
+            var favoriteLocation = input.GetFavoriteLocation();
+            await _context.SaveAsync(favoriteLocation);
+            return Ok(new CreateFavoriteLocationOutput() { FavoriteLocationId = favoriteLocation.Id });
         }
         catch (Exception error)
         {
@@ -29,13 +29,13 @@ public class FavoriteCountriesController(IDynamoDBContext context) : ControllerB
     }
 
     [HttpDelete("{id}")]
-    public async Task<ActionResult> DeleteFavoriteCountry([FromRoute] Guid id)
+    public async Task<ActionResult> DeleteFavoriteLocation([FromRoute] Guid id)
     {
         try
         {
-            var favoriteCountry = await _context.LoadAsync<FavoriteCountry>(id);
-            if (favoriteCountry is null) return NotFound();
-            await _context.DeleteAsync<FavoriteCountry>(id);
+            var favoriteLocation = await _context.LoadAsync<FavoriteLocation>(id);
+            if (favoriteLocation is null) return NotFound();
+            await _context.DeleteAsync<FavoriteLocation>(id);
             return NoContent();
         }
         catch (Exception error)
@@ -46,13 +46,13 @@ public class FavoriteCountriesController(IDynamoDBContext context) : ControllerB
     }
 
     [HttpGet]
-    public async Task<ActionResult<List<FavoriteCountry>>> ListFavoriteCountries()
+    public async Task<ActionResult<List<FavoriteLocation>>> ListFavoriteLocations()
     {
         try
         {
-            var favoriteCountries = await _context.ScanAsync<FavoriteCountry>(new List<ScanCondition>())
+            var favoriteLocations = await _context.ScanAsync<FavoriteLocation>(new List<ScanCondition>())
                 .GetRemainingAsync();
-            return Ok(favoriteCountries);
+            return Ok(favoriteLocations);
         }
         catch (Exception error)
         {
