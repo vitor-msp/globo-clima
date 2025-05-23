@@ -32,6 +32,8 @@ public class FavoriteCountriesController(IDynamoDBContext context) : ControllerB
     {
         try
         {
+            var favoriteCountry = await _context.LoadAsync<FavoriteCountry>(id);
+            if (favoriteCountry is null) return NotFound();
             await _context.DeleteAsync<FavoriteCountry>(id);
             return NoContent();
         }

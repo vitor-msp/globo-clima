@@ -40,4 +40,14 @@ public class FavoriteCountriesTest : BaseTest
         var favoriteCountry = await _context.LoadAsync<FavoriteCountry>(savedFavoriteCountry.Id);
         Assert.Null(favoriteCountry);
     }
+
+    [Fact]
+    public async Task ShouldNotDeleteInexistingFavoriteCountry()
+    {
+        var favoriteCountryId = Guid.NewGuid();
+        var output = await _controller.DeleteFavoriteCountry(favoriteCountryId);
+        Assert.IsType<NotFoundResult>(output);
+        var favoriteCountry = await _context.LoadAsync<FavoriteCountry>(favoriteCountryId);
+        Assert.Null(favoriteCountry);
+    }
 }
