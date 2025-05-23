@@ -1,3 +1,4 @@
+using GloboClima.Api.Exceptions;
 using GloboClima.Api.Schema;
 using GloboClima.Api.Services.Contract;
 
@@ -16,4 +17,10 @@ public class CreateUserInput()
         Username = Username,
         PasswordHash = textHasher.Hash(Password),
     };
+
+    public void ValidatePassword()
+    {
+        if (!Password.Equals(PasswordConfirmation))
+            throw new DomainException("Password and confirmation must be equal.");
+    }
 }

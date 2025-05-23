@@ -1,5 +1,6 @@
 using System.Net;
 using Amazon.DynamoDBv2.Model;
+using GloboClima.Api.Exceptions;
 using GloboClima.Api.Presenters;
 using Microsoft.AspNetCore.Mvc;
 
@@ -24,6 +25,7 @@ public class ExceptionMiddleware(RequestDelegate next) : ControllerBase
     private static Task HandleException(HttpContext context, Exception error)
     {
         var code = HttpStatusCode.InternalServerError;
+        if (error is DomainException) code = HttpStatusCode.UnprocessableEntity;
         if (error is ConditionalCheckFailedException) code = HttpStatusCode.Conflict;
         var output = ErrorPresenter.GenerateJson(error.Message);
         context.Response.ContentType = "application/json";

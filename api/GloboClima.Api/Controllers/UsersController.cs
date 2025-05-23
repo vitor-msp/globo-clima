@@ -21,6 +21,7 @@ public class UsersController(IDynamoDBContext context, IAmazonDynamoDB dbClient,
     [HttpPost("users")]
     public async Task<ActionResult> CreateUser([FromBody] CreateUserInput input)
     {
+        input.ValidatePassword();
         var user = input.GetUser(_textHasherService);
         await _dbClient.PutItemAsync(new PutItemRequest
         {

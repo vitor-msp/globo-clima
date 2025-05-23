@@ -46,6 +46,22 @@ public class UsersTest : BaseTest
     }
 
     [Fact]
+    public async Task ShouldNotCreateUserWithInvalidPasswordConfirmation()
+    {
+        var input = new CreateUserInput()
+        {
+            Name = "fulano de tal",
+            Username = "fulano",
+            Password = "fulanO.123@",
+            PasswordConfirmation = "another-password"
+        };
+        var response = await _httpClient.PostAsJsonAsync("/users", input);
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+        var user = await _dbContext.LoadAsync<User>("fulano");
+        Assert.Null(user);
+    }
+
+    [Fact]
     public async Task ShouldLoginUser()
     {
         await CreateUser();
