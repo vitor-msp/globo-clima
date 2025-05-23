@@ -8,7 +8,7 @@ public class FavoriteLocationsTest : BaseTest
     [Fact]
     public async Task ShouldCreateFavoriteLocation()
     {
-        var input = new CreateFavoriteLocationInput() { Lat = 1, Lon = -1.1 };
+        var input = new CreateFavoriteLocationInput() { Lat = 1, Lon = -1 };
         var response = await _httpClient.PostAsJsonAsync("favorite-locations", input);
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var output = await response.Content.ReadFromJsonAsync<CreateFavoriteLocationOutput>();
@@ -23,7 +23,7 @@ public class FavoriteLocationsTest : BaseTest
     [Fact]
     public async Task ShouldDeleteFavoriteLocation()
     {
-        var savedFavoriteLocation = new FavoriteLocation() { Lat = 1, Lon = -1.1 };
+        var savedFavoriteLocation = new FavoriteLocation() { Lat = 1, Lon = -1 };
         await _dbContext.SaveAsync(savedFavoriteLocation);
         var response = await _httpClient.DeleteAsync($"favorite-locations/{savedFavoriteLocation.Id}");
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
@@ -44,8 +44,8 @@ public class FavoriteLocationsTest : BaseTest
     [Fact]
     public async Task ShouldListFavoriteLocations()
     {
-        var location1 = new FavoriteLocation() { Lat = 1, Lon = -1.1 };
-        var location2 = new FavoriteLocation() { Lat = -4, Lon = 0.6 };
+        var location1 = new FavoriteLocation() { Lat = 1, Lon = -1 };
+        var location2 = new FavoriteLocation() { Lat = -4, Lon = 6 };
         await _dbContext.SaveAsync(location1);
         await _dbContext.SaveAsync(location2);
         var response = await _httpClient.GetAsync("/favorite-locations");

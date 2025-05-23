@@ -16,3 +16,4 @@ global using System.Text;
 global using Microsoft.IdentityModel.Tokens;
 global using GloboClima.Api.Extensions;
 global using GloboClima.Api.Services.Contract;
+global using GloboClima.Api.Exceptions;
