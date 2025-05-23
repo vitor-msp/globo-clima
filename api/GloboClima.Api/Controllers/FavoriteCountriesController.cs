@@ -43,4 +43,20 @@ public class FavoriteCountriesController(IDynamoDBContext context) : ControllerB
             return StatusCode(StatusCodes.Status500InternalServerError, output);
         }
     }
+
+    [HttpGet]
+    public async Task<ActionResult<List<FavoriteCountry>>> ListFavoriteCountries()
+    {
+        try
+        {
+            var favoriteCountries = await _context.ScanAsync<FavoriteCountry>(new List<ScanCondition>())
+                .GetRemainingAsync();
+            return Ok(favoriteCountries);
+        }
+        catch (Exception error)
+        {
+            var output = ErrorPresenter.GenerateJson(error.Message);
+            return StatusCode(StatusCodes.Status500InternalServerError, output);
+        }
+    }
 }

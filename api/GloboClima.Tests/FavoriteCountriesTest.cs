@@ -50,4 +50,23 @@ public class FavoriteCountriesTest : BaseTest
         var favoriteCountry = await _context.LoadAsync<FavoriteCountry>(favoriteCountryId);
         Assert.Null(favoriteCountry);
     }
+
+    [Fact]
+    public async Task ShouldListFavoriteCountries()
+    {
+        var brazil = new FavoriteCountry() { Cioc = "BRA" };
+        var argentina = new FavoriteCountry() { Cioc = "ARG" };
+        await _context.SaveAsync(brazil);
+        await _context.SaveAsync(argentina);
+        var output = await _controller.ListFavoriteCountries();
+        var outputResult = Assert.IsType<OkObjectResult>(output.Result);
+        var outputContent = Assert.IsType<List<FavoriteCountry>>(outputResult.Value);
+        Assert.Equal(2, outputContent.Count);
+        var savedBrazil = outputContent.Find(country => country.Id == brazil.Id);
+        Assert.NotNull(savedBrazil);
+        Assert.Equal(brazil.Cioc, savedBrazil.Cioc);
+        var savedArgentina = outputContent.Find(country => country.Id == argentina.Id);
+        Assert.NotNull(savedArgentina);
+        Assert.Equal(argentina.Cioc, savedArgentina.Cioc);
+    }
 }
