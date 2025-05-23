@@ -23,6 +23,17 @@ public class FavoriteLocation
         }
     }
 
+    private readonly int _lon;
+
     [DynamoDBProperty]
-    public required int Lon { get; init; }
+    public required int Lon
+    {
+        get => _lon;
+        init
+        {
+            if (value < -180 || value > 180)
+                throw new DomainException("Lon must be between -180 and 180.");
+            _lon = value;
+        }
+    }
 }
