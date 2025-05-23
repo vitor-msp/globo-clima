@@ -25,9 +25,14 @@ public class ExceptionMiddleware(RequestDelegate next) : ControllerBase
     private static Task HandleException(HttpContext context, Exception error)
     {
         var code = HttpStatusCode.InternalServerError;
+        var errorMessage = error.Message;
         if (error is DomainException) code = HttpStatusCode.UnprocessableEntity;
-        if (error is ConditionalCheckFailedException) code = HttpStatusCode.Conflict;
-        var output = ErrorPresenter.GenerateJson(error.Message);
+        if (error is ConditionalCheckFailedException)
+        {
+            code = HttpStatusCode.Conflict;
+            errorMessage = "Username already in use.";
+        }
+        var output = ErrorPresenter.GenerateJson(errorMessage);
         context.Response.ContentType = "application/json";
         context.Response.StatusCode = (int)code;
         return context.Response.WriteAsync(output);

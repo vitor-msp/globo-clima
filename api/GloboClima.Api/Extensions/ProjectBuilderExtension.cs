@@ -20,10 +20,11 @@ public static class ProjectBuilderExtension
         services.AddSingleton<ITextHasherService, TextHasherService>();
     }
 
-    private static AmazonDynamoDBClient GetDbClient(string connectionString)
-        => new(new AmazonDynamoDBConfig { ServiceURL = connectionString });
+    private static IAmazonDynamoDB GetDbClient(string connectionString)
+        => new AmazonDynamoDBClient(new AmazonDynamoDBConfig { ServiceURL = connectionString });
 
 #pragma warning disable CS0618 // Type or member is obsolete
-    private static DynamoDBContext GetDbContext(AmazonDynamoDBClient dbClient) => new(dbClient);
+    private static IDynamoDBContext GetDbContext(IAmazonDynamoDB dbClient)
+        => new DynamoDBContext(dbClient);
 #pragma warning restore CS0618 // Type or member is obsolete
 }
