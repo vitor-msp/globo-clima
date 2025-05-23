@@ -1,6 +1,7 @@
 using System.Text.RegularExpressions;
 using GloboClima.Api.Configuration;
 using GloboClima.Api.Services.Implementation;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 
@@ -97,5 +98,17 @@ public class UsersTest : BaseTest
         var outputContent = Assert.IsType<LoginOutput>(outputResult.Value);
         var jwtPattern = @"^[^\.\s]+\.[^\.\s]+\.[^\.\s]+$";
         Assert.True(Regex.Match(outputContent.AccessToken, jwtPattern).Success);
+    }
+
+    [Fact]
+    public async Task ShouldNotLoginInexistingUser()
+    {
+        var input = new LoginInput()
+        {
+            Username = "fulano",
+            Password = "fulano0.123@",
+        };
+        var output = await _controller.Login(input);
+        Assert.IsType<UnprocessableEntityResult>(output.Result);
     }
 }
