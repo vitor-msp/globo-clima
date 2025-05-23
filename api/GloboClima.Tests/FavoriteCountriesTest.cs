@@ -29,4 +29,15 @@ public class FavoriteCountriesTest : BaseTest
         Assert.NotNull(favoriteCountry);
         Assert.Equal(input.Cioc, favoriteCountry.Cioc);
     }
+
+    [Fact]
+    public async Task ShouldDeleteFavoriteCountry()
+    {
+        var savedFavoriteCountry = new FavoriteCountry() { Cioc = "BRA" };
+        await _context.SaveAsync(savedFavoriteCountry);
+        var output = await _controller.DeleteFavoriteCountry(savedFavoriteCountry.Id);
+        Assert.IsType<NoContentResult>(output);
+        var favoriteCountry = await _context.LoadAsync<FavoriteCountry>(savedFavoriteCountry.Id);
+        Assert.Null(favoriteCountry);
+    }
 }
