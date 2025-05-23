@@ -1,3 +1,4 @@
+using GloboClima.Api.Extensions;
 using GloboClima.Api.Services.Contract;
 
 namespace GloboClima.Tests;
@@ -22,6 +23,7 @@ public class CustomWebApplicationFactory(IAmazonDynamoDB dbClient, IDynamoDBCont
 
         builder.Configure(app =>
         {
+            app.UseExceptionMiddleware();
             app.UseRouting();
             app.UseEndpoints(endpoints =>
             {
