@@ -19,6 +19,7 @@ public class CustomWebApplicationFactory(IConfiguration configuration, IAmazonDy
             services.AddSingleton(_dbClient);
             services.AddSingleton(_dbContext);
             services.AddSingleton<ITokenService, TokenService>();
+            services.AddSingleton<ITextHasherService, TextHasherService>();
         });
 
         builder.Configure(app =>

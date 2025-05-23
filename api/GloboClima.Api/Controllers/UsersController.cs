@@ -9,17 +9,19 @@ using Microsoft.AspNetCore.Mvc;
 namespace GloboClima.Api.Controllers;
 
 [ApiController]
-public class UsersController(IDynamoDBContext context, IAmazonDynamoDB dbClient, ITokenService tokenService)
+public class UsersController(IDynamoDBContext context, IAmazonDynamoDB dbClient,
+    ITokenService tokenService, ITextHasherService textHasherService)
     : ControllerBase
 {
     private readonly IDynamoDBContext _context = context;
     private readonly IAmazonDynamoDB _dbClient = dbClient;
     private readonly ITokenService _tokenService = tokenService;
+    private readonly ITextHasherService _textHasherService = textHasherService;
 
     [HttpPost("users")]
     public async Task<ActionResult> CreateUser([FromBody] CreateUserInput input)
     {
-        var user = input.GetUser();
+        var user = input.GetUser(_textHasherService);
         await _dbClient.PutItemAsync(new PutItemRequest
         {
             TableName = "users",
@@ -33,7 +35,7 @@ public class UsersController(IDynamoDBContext context, IAmazonDynamoDB dbClient,
     public async Task<ActionResult<LoginOutput>> Login([FromBody] LoginInput input)
     {
         var user = await _context.LoadAsync<User>(input.Username);
-        if (user is null || !user.PasswordIsCorrect(input.Password))
+        if (user is null || !user.PasswordIsCorrect(_textHasherService, input.Password))
             return UnprocessableEntity();
         var accessToken = _tokenService.GenerateJwt(user);
         return Ok(new LoginOutput() { AccessToken = accessToken });

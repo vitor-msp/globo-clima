@@ -1,4 +1,5 @@
 using Amazon.DynamoDBv2.DataModel;
+using GloboClima.Api.Services.Contract;
 
 namespace GloboClima.Api.Schema;
 
@@ -12,7 +13,8 @@ public class User
     public required string Name { get; init; }
 
     [DynamoDBProperty]
-    public required string Password { get; init; }
+    public required string PasswordHash { get; init; }
 
-    public bool PasswordIsCorrect(string password) => Password.Equals(password);
+    public bool PasswordIsCorrect(ITextHasherService textHasher, string password)
+        => textHasher.Verify(PasswordHash, password);
 }

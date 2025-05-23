@@ -4,6 +4,7 @@ public class UsersTest : BaseTest
 {
     protected override string GetTableName() => "users";
     protected override string GetKeyName() => "Username";
+    private readonly TextHasherService _textHasher = new();
 
     [Fact]
     public async Task ShouldCreateUser()
@@ -21,7 +22,7 @@ public class UsersTest : BaseTest
         Assert.NotNull(user);
         Assert.Equal(input.Name, user.Name);
         Assert.Equal(input.Username, user.Username);
-        Assert.Equal(input.Password, user.Password);
+        Assert.True(_textHasher.Verify(user.PasswordHash, input.Password));
     }
 
     [Fact]
@@ -41,7 +42,7 @@ public class UsersTest : BaseTest
         Assert.NotNull(user);
         Assert.Equal(existingUser.Name, user.Name);
         Assert.Equal(existingUser.Username, user.Username);
-        Assert.Equal(existingUser.Password, user.Password);
+        Assert.Equal(existingUser.PasswordHash, user.PasswordHash);
     }
 
     [Fact]
@@ -95,7 +96,7 @@ public class UsersTest : BaseTest
         {
             Name = "fulano de tal",
             Username = "fulano",
-            Password = "fulano0.123@"
+            PasswordHash = _textHasher.Hash("fulano0.123@")
         };
         await _dbContext.SaveAsync(existingUser);
         return existingUser;
