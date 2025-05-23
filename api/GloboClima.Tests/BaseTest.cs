@@ -2,12 +2,14 @@ namespace GloboClima.Tests;
 
 public abstract class BaseTest : IAsyncLifetime
 {
+    protected readonly IConfiguration _configuration;
     protected readonly IAmazonDynamoDB _dbClient;
     protected readonly IDynamoDBContext _dbContext;
     protected readonly HttpClient _httpClient;
 
     protected BaseTest()
     {
+        _configuration = LoadConfiguration();
         _dbClient = new AmazonDynamoDBClient(new AmazonDynamoDBConfig
         {
             ServiceURL = "http://localhost:8000"
@@ -17,7 +19,8 @@ public abstract class BaseTest : IAsyncLifetime
         _dbContext = new DynamoDBContext(_dbClient);
 #pragma warning restore CS0618 // Type or member is obsolete
 
-        _httpClient = new CustomWebApplicationFactory(_dbClient, _dbContext).CreateClient();
+        _httpClient = new CustomWebApplicationFactory(_configuration, _dbClient, _dbContext)
+            .CreateClient();
     }
 
     public async Task InitializeAsync() => await CreateTable(GetTableName(), GetKeyName());
@@ -61,4 +64,10 @@ public abstract class BaseTest : IAsyncLifetime
 
     protected abstract string GetTableName();
     protected abstract string GetKeyName();
+
+    private static IConfiguration LoadConfiguration()
+        => new ConfigurationBuilder()
+            .SetBasePath(AppContext.BaseDirectory)
+            .AddJsonFile("appsettings.Development.json", optional: false, reloadOnChange: true)
+            .Build();
 }

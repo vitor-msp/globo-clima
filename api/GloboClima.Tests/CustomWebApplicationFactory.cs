@@ -3,18 +3,18 @@ using GloboClima.Api.Services.Contract;
 
 namespace GloboClima.Tests;
 
-public class CustomWebApplicationFactory(IAmazonDynamoDB dbClient, IDynamoDBContext dbContext)
+public class CustomWebApplicationFactory(IConfiguration configuration, IAmazonDynamoDB dbClient, IDynamoDBContext dbContext)
     : WebApplicationFactory<Program>
 {
+    private readonly IConfiguration _configuration = configuration;
     private readonly IAmazonDynamoDB _dbClient = dbClient;
     private readonly IDynamoDBContext _dbContext = dbContext;
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        var configuration = LoadConfiguration();
         builder.ConfigureServices(services =>
         {
-            services.Configure<TokenConfiguration>(configuration.GetSection("Token"));
+            services.Configure<TokenConfiguration>(_configuration.GetSection("Token"));
             services.AddControllers();
             services.AddSingleton(_dbClient);
             services.AddSingleton(_dbContext);
@@ -31,10 +31,4 @@ public class CustomWebApplicationFactory(IAmazonDynamoDB dbClient, IDynamoDBCont
             });
         });
     }
-
-    private static IConfiguration LoadConfiguration()
-        => new ConfigurationBuilder()
-            .SetBasePath(AppContext.BaseDirectory)
-            .AddJsonFile("appsettings.Development.json", optional: false, reloadOnChange: true)
-            .Build();
 }

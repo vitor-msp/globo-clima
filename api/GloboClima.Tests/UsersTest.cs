@@ -59,6 +59,9 @@ public class UsersTest : BaseTest
         Assert.NotNull(output);
         var jwtPattern = @"^[^\.\s]+\.[^\.\s]+\.[^\.\s]+$";
         Assert.True(Regex.Match(output.AccessToken, jwtPattern).Success);
+        var claims = ValidateToken(output.AccessToken);
+        var username = claims.FindFirstValue(ClaimTypes.Name);
+        Assert.Equal("fulano", username);
     }
 
     [Fact]
@@ -96,5 +99,21 @@ public class UsersTest : BaseTest
         };
         await _dbContext.SaveAsync(existingUser);
         return existingUser;
+    }
+
+    private ClaimsPrincipal ValidateToken(string token)
+    {
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var key = _configuration.GetSection("Token")["Key"]
+            ?? throw new Exception("Missing configure token key.");
+        return tokenHandler.ValidateToken(token, new TokenValidationParameters()
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key)),
+            ValidateIssuer = false,
+            ValidateAudience = false,
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.Zero
+        }, out _);
     }
 }
