@@ -91,7 +91,7 @@ public class UsersTest : BaseTest
             Password = "fulano0.123@",
         };
         var response = await _httpClient.PostAsJsonAsync("/login", input);
-        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
     [Fact]
@@ -104,7 +104,7 @@ public class UsersTest : BaseTest
             Password = "incorrect-password",
         };
         var response = await _httpClient.PostAsJsonAsync("/login", input);
-        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
     public async Task<User> CreateUser()
