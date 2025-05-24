@@ -6,6 +6,7 @@ builder.Services.AddControllers();
 builder.Services.BuildProject(builder.Configuration);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.SetupSwagger();
+builder.Services.AddHttpLogging(logging => logging.CombineLogs = true);
 
 var app = builder.Build();
 
@@ -16,6 +17,7 @@ if (app.Environment.IsDevelopment())
 }
 
 // app.UseHttpsRedirection();
+app.UseHttpLogging();
 app.UseExceptionMiddleware();
 app.UseAuthentication();
 app.UseAuthorization();
