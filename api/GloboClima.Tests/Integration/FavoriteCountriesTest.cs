@@ -19,6 +19,14 @@ public class FavoriteCountriesTest : BaseTest
     }
 
     [Fact]
+    public async Task ShouldNotCreateFavoriteCountry_UserIsNotAutenticated()
+    {
+        var input = new CreateFavoriteCountryInput() { Cioc = "BRA" };
+        var response = await _httpClient.PostAsJsonAsync("/favorite-countries", input);
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
     public async Task ShouldCreateFavoriteCountry()
     {
         var input = new CreateFavoriteCountryInput() { Cioc = "BRA" };
@@ -32,6 +40,15 @@ public class FavoriteCountriesTest : BaseTest
         Assert.NotNull(favoriteCountry);
         Assert.Equal(input.Cioc, favoriteCountry.Cioc);
         Assert.Equal("fulano", favoriteCountry.Username);
+    }
+
+    [Fact]
+    public async Task ShouldNotDeleteFavoriteCountry_UserIsNotAutenticated()
+    {
+        var savedFavoriteCountry = new FavoriteCountry() { Cioc = "BRA", Username = "fulano" };
+        await _dbContext.SaveAsync(savedFavoriteCountry);
+        var response = await _httpClient.DeleteAsync($"/favorite-countries/{savedFavoriteCountry.Id}");
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
     [Fact]
@@ -75,6 +92,15 @@ public class FavoriteCountriesTest : BaseTest
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         var favoriteCountry = await _dbContext.LoadAsync<FavoriteCountry>(othersSavedFavoriteCountry.Id);
         Assert.NotNull(favoriteCountry);
+    }
+
+    [Fact]
+    public async Task ShouldNotListFavoriteCountry_UserIsNotAutenticated()
+    {
+        var savedFavoriteCountry = new FavoriteCountry() { Cioc = "BRA", Username = "fulano" };
+        await _dbContext.SaveAsync(savedFavoriteCountry);
+        var response = await _httpClient.GetAsync("/favorite-countries");
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
     [Fact]

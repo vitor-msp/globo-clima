@@ -19,6 +19,14 @@ public class FavoriteLocationsTest : BaseTest
     }
 
     [Fact]
+    public async Task ShouldNotCreateFavoriteLocation_UserIsNotAutenticated()
+    {
+        var input = new CreateFavoriteLocationInput() { Lat = 1, Lon = -1 };
+        var response = await _httpClient.PostAsJsonAsync("/favorite-locations", input);
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
     public async Task ShouldCreateFavoriteLocation()
     {
         var input = new CreateFavoriteLocationInput() { Lat = 1, Lon = -1 };
@@ -33,6 +41,15 @@ public class FavoriteLocationsTest : BaseTest
         Assert.Equal(input.Lat, favoriteLocation.Lat);
         Assert.Equal(input.Lon, favoriteLocation.Lon);
         Assert.Equal("fulano", favoriteLocation.Username);
+    }
+
+    [Fact]
+    public async Task ShouldNotDeleteFavoriteLocation_UserIsNotAutenticated()
+    {
+        var savedFavoriteLocation = new FavoriteLocation() { Lat = 1, Lon = -1, Username = "fulano" };
+        await _dbContext.SaveAsync(savedFavoriteLocation);
+        var response = await _httpClient.DeleteAsync($"/favorite-countries/{savedFavoriteLocation.Id}");
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
     [Fact]
@@ -76,6 +93,15 @@ public class FavoriteLocationsTest : BaseTest
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         var favoriteLocation = await _dbContext.LoadAsync<FavoriteLocation>(othersSavedFavoriteLocation.Id);
         Assert.NotNull(favoriteLocation);
+    }
+
+    [Fact]
+    public async Task ShouldNotListFavoriteLocation_UserIsNotAutenticated()
+    {
+        var savedFavoriteLocation = new FavoriteLocation() { Lat = 1, Lon = -1, Username = "fulano" };
+        await _dbContext.SaveAsync(savedFavoriteLocation);
+        var response = await _httpClient.GetAsync("/favorite-locations");
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
     [Fact]
