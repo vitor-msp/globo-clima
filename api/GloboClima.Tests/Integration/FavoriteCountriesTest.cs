@@ -12,9 +12,9 @@ public class FavoriteCountriesTest : BaseTest
 
     public FavoriteCountriesTest()
     {
-        var configuration = new TokenConfiguration();
-        _configuration.GetSection("Token").Bind(configuration);
-        var options = Options.Create(configuration);
+        var tokenConfiguration = new TokenConfiguration();
+        _configuration.GetSection("Token").Bind(tokenConfiguration);
+        var options = Options.Create(tokenConfiguration);
         _tokenService = new TokenService(options);
     }
 

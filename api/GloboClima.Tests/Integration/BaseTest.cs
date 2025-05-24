@@ -10,17 +10,15 @@ public abstract class BaseTest : IAsyncLifetime
     protected BaseTest()
     {
         _configuration = LoadConfiguration();
-        _dbClient = new AmazonDynamoDBClient(new AmazonDynamoDBConfig
-        {
-            ServiceURL = "http://localhost:8000"
-        });
+        var dbConnectionString = _configuration.GetConnectionString("DynamoDBConnection")
+           ?? throw new Exception("Missing configure db connection string.");
+        _dbClient = new AmazonDynamoDBClient(new AmazonDynamoDBConfig { ServiceURL = dbConnectionString });
 
 #pragma warning disable CS0618 // Type or member is obsolete
         _dbContext = new DynamoDBContext(_dbClient);
 #pragma warning restore CS0618 // Type or member is obsolete
 
-        _httpClient = new CustomWebApplicationFactory(_configuration, _dbClient, _dbContext)
-            .CreateClient();
+        _httpClient = new CustomWebApplicationFactory().CreateClient();
     }
 
     public async Task InitializeAsync() => await CreateTable(GetTableName(), GetKeyName());
