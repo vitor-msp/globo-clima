@@ -27,10 +27,10 @@ public class FavoriteCountriesController(IDynamoDBContext context) : ControllerB
     [Authorize]
     public async Task<ActionResult> DeleteFavoriteCountry([FromRoute] Guid id)
     {
-        var favoriteCountry = await _context.LoadAsync<FavoriteCountry>(id);
-        if (favoriteCountry is null || !favoriteCountry.Username.Equals(User.GetName()))
-            return NotFound();
-        await _context.DeleteAsync<FavoriteCountry>(id);
+        var username = User.GetName();
+        var favoriteCountry = await _context.LoadAsync<FavoriteCountry>(username, id);
+        if (favoriteCountry is null) return NotFound();
+        await _context.DeleteAsync<FavoriteCountry>(username, id);
         return NoContent();
     }
 
@@ -38,11 +38,7 @@ public class FavoriteCountriesController(IDynamoDBContext context) : ControllerB
     [Authorize]
     public async Task<ActionResult<List<FavoriteCountry>>> ListFavoriteCountries()
     {
-        var conditions = new List<ScanCondition>()
-        {
-            new ScanCondition("Username", ScanOperator.Equal, User.GetName())
-        };
-        var favoriteCountries = await _context.ScanAsync<FavoriteCountry>(conditions)
+        var favoriteCountries = await _context.QueryAsync<FavoriteCountry>(User.GetName())
             .GetRemainingAsync();
         return Ok(favoriteCountries);
     }

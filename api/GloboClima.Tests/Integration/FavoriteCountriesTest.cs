@@ -8,7 +8,8 @@ public class FavoriteCountriesTest : BaseTest
     private readonly TokenService _tokenService;
     private readonly TextHasherService _textHasher = new();
     protected override string GetTableName() => "favorite-countries";
-    protected override string GetKeyName() => "Id";
+    protected override string GetPartitionKey() => "Username";
+    protected override string? GetSortKey() => "Id";
 
     public FavoriteCountriesTest()
     {
@@ -36,7 +37,7 @@ public class FavoriteCountriesTest : BaseTest
         var output = await response.Content.ReadFromJsonAsync<CreateFavoriteCountryOutput>();
         Assert.NotNull(output);
         Assert.NotEqual(default, output.FavoriteCountryId);
-        var favoriteCountry = await _dbContext.LoadAsync<FavoriteCountry>(output.FavoriteCountryId);
+        var favoriteCountry = await _dbContext.LoadAsync<FavoriteCountry>("fulano", output.FavoriteCountryId);
         Assert.NotNull(favoriteCountry);
         Assert.Equal(input.Cioc, favoriteCountry.Cioc);
         Assert.Equal("fulano", favoriteCountry.Username);
@@ -61,9 +62,9 @@ public class FavoriteCountriesTest : BaseTest
         SetAccessTokenToUsername("fulano");
         var response = await _httpClient.DeleteAsync($"/favorite-countries/{savedFavoriteCountry.Id}");
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        var favoriteCountry = await _dbContext.LoadAsync<FavoriteCountry>(savedFavoriteCountry.Id);
+        var favoriteCountry = await _dbContext.LoadAsync<FavoriteCountry>("fulano", savedFavoriteCountry.Id);
         Assert.Null(favoriteCountry);
-        var othersFavoriteCountry = await _dbContext.LoadAsync<FavoriteCountry>(othersSavedFavoriteCountry.Id);
+        var othersFavoriteCountry = await _dbContext.LoadAsync<FavoriteCountry>("ciclano", othersSavedFavoriteCountry.Id);
         Assert.NotNull(othersFavoriteCountry);
     }
 
@@ -76,9 +77,9 @@ public class FavoriteCountriesTest : BaseTest
         SetAccessTokenToUsername("fulano");
         var response = await _httpClient.DeleteAsync($"/favorite-countries/{favoriteCountryId}");
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-        var favoriteCountry = await _dbContext.LoadAsync<FavoriteCountry>(favoriteCountryId);
+        var favoriteCountry = await _dbContext.LoadAsync<FavoriteCountry>("fulano", favoriteCountryId);
         Assert.Null(favoriteCountry);
-        var othersFavoriteCountry = await _dbContext.LoadAsync<FavoriteCountry>(othersSavedFavoriteCountry.Id);
+        var othersFavoriteCountry = await _dbContext.LoadAsync<FavoriteCountry>("ciclano", othersSavedFavoriteCountry.Id);
         Assert.NotNull(othersFavoriteCountry);
     }
 
@@ -90,7 +91,7 @@ public class FavoriteCountriesTest : BaseTest
         SetAccessTokenToUsername("fulano");
         var response = await _httpClient.DeleteAsync($"/favorite-countries/{othersSavedFavoriteCountry.Id}");
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-        var favoriteCountry = await _dbContext.LoadAsync<FavoriteCountry>(othersSavedFavoriteCountry.Id);
+        var favoriteCountry = await _dbContext.LoadAsync<FavoriteCountry>("ciclano", othersSavedFavoriteCountry.Id);
         Assert.NotNull(favoriteCountry);
     }
 

@@ -21,9 +21,9 @@ public abstract class BaseTest : IAsyncLifetime
         _httpClient = new CustomWebApplicationFactory().CreateClient();
     }
 
-    public async Task InitializeAsync() => await CreateTable(GetTableName(), GetKeyName());
+    public async Task InitializeAsync() => await CreateTable(GetTableName(), GetPartitionKey(), GetSortKey());
 
-    private async Task CreateTable(string tableName, string keyName)
+    private async Task CreateTable(string tableName, string partitionKey, string? sortKey = null)
     {
         try
         {
@@ -31,17 +31,24 @@ public abstract class BaseTest : IAsyncLifetime
         }
         catch (ResourceNotFoundException)
         {
+            var attributeDefinitions = new List<AttributeDefinition>
+            {
+                new AttributeDefinition(partitionKey, ScalarAttributeType.S)
+            };
+            var keySchema = new List<KeySchemaElement>
+            {
+                new KeySchemaElement(partitionKey, KeyType.HASH)
+            };
+            if (!string.IsNullOrEmpty(sortKey))
+            {
+                attributeDefinitions.Add(new AttributeDefinition(sortKey, ScalarAttributeType.S));
+                keySchema.Add(new KeySchemaElement(sortKey, KeyType.RANGE));
+            }
             await _dbClient.CreateTableAsync(new CreateTableRequest
             {
                 TableName = tableName,
-                AttributeDefinitions = new List<AttributeDefinition>()
-                {
-                    new AttributeDefinition(keyName, ScalarAttributeType.S)
-                },
-                KeySchema = new List<KeySchemaElement>()
-                {
-                    new KeySchemaElement(keyName, KeyType.HASH)
-                },
+                AttributeDefinitions = attributeDefinitions,
+                KeySchema = keySchema,
                 ProvisionedThroughput = new ProvisionedThroughput(5, 5)
             });
             await WaitForTableActive(tableName);
@@ -55,13 +62,14 @@ public abstract class BaseTest : IAsyncLifetime
         while (true)
         {
             var resp = await _dbClient.DescribeTableAsync(tableName);
-            if (resp.Table.TableStatus == "ACTIVE") break;
+            if (resp.Table.TableStatus == TableStatus.ACTIVE) break;
             await Task.Delay(500);
         }
     }
 
     protected abstract string GetTableName();
-    protected abstract string GetKeyName();
+    protected abstract string GetPartitionKey();
+    protected abstract string? GetSortKey();
 
     private static IConfiguration LoadConfiguration()
         => new ConfigurationBuilder()
