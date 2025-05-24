@@ -27,6 +27,7 @@ public class ExceptionMiddleware(RequestDelegate next) : ControllerBase
         var code = HttpStatusCode.InternalServerError;
         var errorMessage = error.Message;
         if (error is DomainException) code = HttpStatusCode.UnprocessableEntity;
+        if (error is UnauthorizeException) code = HttpStatusCode.Unauthorized;
         if (error is ConditionalCheckFailedException)
         {
             code = HttpStatusCode.Conflict;

@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+
 namespace GloboClima.Tests.Integration;
 
 public class CustomWebApplicationFactory(IConfiguration configuration, IAmazonDynamoDB dbClient, IDynamoDBContext dbContext)
@@ -11,6 +13,7 @@ public class CustomWebApplicationFactory(IConfiguration configuration, IAmazonDy
     {
         builder.ConfigureServices(services =>
         {
+            ConfigureToken(services);
             services.Configure<TokenConfiguration>(_configuration.GetSection("Token"));
             services.AddControllers();
             services.AddSingleton(_dbClient);
@@ -23,10 +26,37 @@ public class CustomWebApplicationFactory(IConfiguration configuration, IAmazonDy
         {
             app.UseExceptionMiddleware();
             app.UseRouting();
+            app.UseAuthentication();
+            app.UseAuthorization();
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
             });
         });
+    }
+
+    private void ConfigureToken(IServiceCollection services)
+    {
+        var key = _configuration.GetSection("Token")["Key"]
+            ?? throw new Exception("Missing configure token key.");
+
+        services.AddAuthentication(options =>
+        {
+            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        }).AddJwtBearer(options =>
+        {
+            options.SaveToken = true;
+            options.TokenValidationParameters = new TokenValidationParameters()
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key)),
+                ValidateAudience = false,
+                ValidateIssuer = false,
+                ValidateLifetime = true,
+                ClockSkew = TimeSpan.Zero,
+            };
+        });
+        services.AddAuthorization();
     }
 }

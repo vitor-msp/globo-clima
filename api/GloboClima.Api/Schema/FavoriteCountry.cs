@@ -25,4 +25,7 @@ public partial class FavoriteCountry
             _cioc = value;
         }
     }
+
+    [DynamoDBProperty]
+    public required string Username { get; init; }
 }

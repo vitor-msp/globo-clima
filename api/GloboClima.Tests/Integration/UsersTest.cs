@@ -2,9 +2,9 @@ namespace GloboClima.Tests.Integration;
 
 public class UsersTest : BaseTest
 {
+    private readonly TextHasherService _textHasher = new();
     protected override string GetTableName() => "users";
     protected override string GetKeyName() => "Username";
-    private readonly TextHasherService _textHasher = new();
 
     [Fact]
     public async Task ShouldCreateUser()

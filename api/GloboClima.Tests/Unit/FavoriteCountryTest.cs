@@ -14,6 +14,10 @@ public class FavoriteCountryTest
     [InlineData("@ab")]
     public void ShouldNotCreateFavoriteCountryWithInvalidCioc(string cioc)
     {
-        Assert.Throws<DomainException>(() => new FavoriteCountry() { Cioc = cioc });
+        Assert.Throws<DomainException>(() => new FavoriteCountry()
+        {
+            Cioc = cioc,
+            Username = "fulano"
+        });
     }
 }
