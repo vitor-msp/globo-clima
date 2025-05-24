@@ -16,7 +16,11 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+if (app.Environment.IsProduction())
+{
+    app.UseHttpsRedirection();
+}
+
 app.UseHttpLogging();
 app.UseExceptionMiddleware();
 app.UseCors(builder => builder

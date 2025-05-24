@@ -13,25 +13,15 @@ public static class ProjectBuilderExtension
 {
     public static void BuildProject(this IServiceCollection services, IConfiguration configuration)
     {
-        var dbConnectionString = configuration.GetConnectionString("DynamoDBConnection")
-            ?? throw new Exception("Missing configure db connection string.");
-        var dbClient = GetDbClient(dbConnectionString);
-        var dbContext = GetDbContext(dbClient);
-        services.AddSingleton(dbClient);
-        services.AddSingleton(dbContext);
+        var dbClient = configuration.GetDbClient();
+        var dbContext = dbClient.GetDbContext();
+        services.AddSingleton<IAmazonDynamoDB>(dbClient);
+        services.AddSingleton<IDynamoDBContext>(dbContext);
         services.AddSingleton<ITokenService, TokenService>();
         services.AddSingleton<ITextHasherService, TextHasherService>();
         services.Configure<TokenConfiguration>(configuration.GetSection("Token"));
         ConfigureToken(services, configuration);
     }
-
-    private static IAmazonDynamoDB GetDbClient(string connectionString)
-        => new AmazonDynamoDBClient(new AmazonDynamoDBConfig { ServiceURL = connectionString });
-
-#pragma warning disable CS0618 // Type or member is obsolete
-    private static IDynamoDBContext GetDbContext(IAmazonDynamoDB dbClient)
-        => new DynamoDBContext(dbClient);
-#pragma warning restore CS0618 // Type or member is obsolete
 
     private static void ConfigureToken(IServiceCollection services, IConfiguration configuration)
     {
