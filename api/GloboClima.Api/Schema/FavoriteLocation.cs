@@ -36,4 +36,7 @@ public class FavoriteLocation
             _lon = value;
         }
     }
+
+    [DynamoDBProperty]
+    public required string Username { get; init; }
 }

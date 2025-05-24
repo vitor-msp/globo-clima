@@ -97,11 +97,11 @@ public class FavoriteCountriesTest : BaseTest
         var savedBrazil = output.Find(country => country.Id == brazil.Id);
         Assert.NotNull(savedBrazil);
         Assert.Equal(brazil.Cioc, savedBrazil.Cioc);
-        Assert.Equal("fulano", savedBrazil.Username);
+        Assert.Equal(brazil.Username, savedBrazil.Username);
         var savedArgentina = output.Find(country => country.Id == argentina.Id);
         Assert.NotNull(savedArgentina);
         Assert.Equal(argentina.Cioc, savedArgentina.Cioc);
-        Assert.Equal("fulano", savedArgentina.Username);
+        Assert.Equal(argentina.Username, savedArgentina.Username);
     }
 
     private void SetAccessTokenToUsername(string username)

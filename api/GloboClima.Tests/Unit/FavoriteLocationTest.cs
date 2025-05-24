@@ -9,7 +9,12 @@ public class FavoriteLocationTest
     [InlineData(91)]
     public void ShouldNotCreateFavoriteLocationWithInvalidLat(int lat)
     {
-        Assert.Throws<DomainException>(() => new FavoriteLocation() { Lat = lat, Lon = 1 });
+        Assert.Throws<DomainException>(() => new FavoriteLocation()
+        {
+            Lat = lat,
+            Lon = 1,
+            Username = "fulano"
+        });
     }
 
     [Theory]
@@ -19,6 +24,11 @@ public class FavoriteLocationTest
     [InlineData(181)]
     public void ShouldNotCreateFavoriteLocationWithInvalidLon(int lon)
     {
-        Assert.Throws<DomainException>(() => new FavoriteLocation() { Lat = 1, Lon = lon });
+        Assert.Throws<DomainException>(() => new FavoriteLocation()
+        {
+            Lat = 1,
+            Lon = lon,
+            Username = "fulano"
+        });
     }
 }
