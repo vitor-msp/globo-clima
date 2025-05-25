@@ -1,3 +1,4 @@
+using Amazon;
 using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.DataModel;
 using Amazon.Runtime;
@@ -11,9 +12,14 @@ public static class DynamoDbExtension
         var dynamoDbConfig = configuration.GetSection("DynamoDB");
         var accessKeyId = dynamoDbConfig["AccessKeyId"] ?? throw new Exception("Missing configure aws access key id.");
         var secretAccessKey = dynamoDbConfig["SecretAccessKey"] ?? throw new Exception("Missing configure aws secret access key.");
-        var serviceUrl = dynamoDbConfig["ServiceURL"] ?? throw new Exception("Missing configure dynamodb service url.");
+        var region = dynamoDbConfig["Region"];
+        var serviceUrl = dynamoDbConfig["ServiceURL"];
+        if (region is null && serviceUrl is null)
+            throw new Exception("Missing configure aws region or dynamodb service url.");
         var credentials = new BasicAWSCredentials(accessKeyId, secretAccessKey);
-        var config = new AmazonDynamoDBConfig { ServiceURL = serviceUrl };
+        var config = region is null
+            ? new AmazonDynamoDBConfig { ServiceURL = serviceUrl }
+            : new AmazonDynamoDBConfig { RegionEndpoint = RegionEndpoint.GetBySystemName(region) };
         return new(credentials, config);
     }
 
