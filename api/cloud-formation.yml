@@ -1,0 +1,649 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Globo Clima API infrastructure
+
+Parameters:
+  ApplicationName:
+    Type: String
+    Default: globo-clima
+    Description: Application name
+  TLSCertificateARN:
+    Type: String
+    Description: GloboClima TLS certificate ARN
+  ImageUrl:
+    Type: String
+    Default: vitormsp/globo-clima
+    Description: Url of the container image
+  AccessTokenExpiresInSeconds:
+    Type: Number
+    Default: 900
+    Description: Seconds until access token expires
+  ApiTokenKeyArn:
+    Type: String
+    Description: Parameter Store ARN of the api token key
+  DynamoDBAccessKeyIdArn:
+    Type: String
+    Description: Parameter Store ARN of the access key id for connect to DynamoDB
+  DynamoDBSecretAccessKeyArn:
+    Type: String
+    Description: Parameter Store ARN of the secret access key for connect to DynamoDB
+  GitHubConnectionArn:
+    Type: String
+    Description: GitHub connection ARN for CodePipeline
+
+Mappings:
+  VPCMap:
+    VPC:
+      CIDR: "10.0.0.0/16"
+    Public01:
+      CIDR: "10.0.0.0/24"
+    Public02:
+      CIDR: "10.0.1.0/24"
+    Private01:
+      CIDR: "10.0.2.0/24"
+    Private02:
+      CIDR: "10.0.3.0/24"
+  ApiMap:
+    Api:
+      Port: "5000"
+
+Resources:
+  # VPC
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      CidrBlock: !FindInMap ["VPCMap", "VPC", "CIDR"]
+      Tags:
+        - Key: Name
+          Value: !Sub "${ApplicationName}-vpc"
+  PublicSubnet01:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref "VPC"
+      CidrBlock: !FindInMap ["VPCMap", "Public01", "CIDR"]
+      AvailabilityZone: !Select
+        - 0
+        - Fn::GetAZs: !Ref "AWS::Region"
+      Tags:
+        - Key: Name
+          Value: !Sub "${ApplicationName}-pub-subnet-01"
+  PublicSubnet02:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref "VPC"
+      CidrBlock: !FindInMap ["VPCMap", "Public02", "CIDR"]
+      AvailabilityZone: !Select
+        - 1
+        - Fn::GetAZs: !Ref "AWS::Region"
+      Tags:
+        - Key: Name
+          Value: !Sub "${ApplicationName}-pub-subnet-02"
+  PrivateSubnet01:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref "VPC"
+      CidrBlock: !FindInMap ["VPCMap", "Private01", "CIDR"]
+      AvailabilityZone: !Select
+        - 0
+        - Fn::GetAZs: !Ref "AWS::Region"
+      Tags:
+        - Key: Name
+          Value: !Sub "${ApplicationName}-priv-subnet-01"
+  PrivateSubnet02:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref "VPC"
+      CidrBlock: !FindInMap ["VPCMap", "Private02", "CIDR"]
+      AvailabilityZone: !Select
+        - 1
+        - Fn::GetAZs: !Ref "AWS::Region"
+      Tags:
+        - Key: Name
+          Value: !Sub "${ApplicationName}-priv-subnet-02"
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Sub "${ApplicationName}-igw"
+  GatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      InternetGatewayId: !Ref "InternetGateway"
+      VpcId: !Ref "VPC"
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref "VPC"
+      Tags:
+        - Key: Name
+          Value: !Sub "${ApplicationName}-pub-rtb"
+  PublicRoute:
+    Type: AWS::EC2::Route
+    DependsOn: GatewayAttachment
+    Properties:
+      RouteTableId: !Ref "PublicRouteTable"
+      DestinationCidrBlock: "0.0.0.0/0"
+      GatewayId: !Ref "InternetGateway"
+  PublicSubnet01RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnet01
+      RouteTableId: !Ref PublicRouteTable
+  PublicSubnet02RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnet02
+      RouteTableId: !Ref PublicRouteTable
+  NatGateway01Attachment:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+      Tags:
+        - Key: Name
+          Value: !Sub "${ApplicationName}-eip-01"
+  NatGateway01:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt NatGateway01Attachment.AllocationId
+      SubnetId: !Ref PublicSubnet01
+      Tags:
+        - Key: Name
+          Value: !Sub "${ApplicationName}-natg-01"
+  NatGateway02Attachment:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+      Tags:
+        - Key: Name
+          Value: !Sub "${ApplicationName}-eip-02"
+  NatGateway02:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt NatGateway02Attachment.AllocationId
+      SubnetId: !Ref PublicSubnet02
+      Tags:
+        - Key: Name
+          Value: !Sub "${ApplicationName}-natg-02"
+  PrivateRouteTable01:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref "VPC"
+      Tags:
+        - Key: Name
+          Value: !Sub "${ApplicationName}-priv-rtb-01"
+  PrivateRoute01:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable01
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NatGateway01
+  PrivateRouteTable01Association:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PrivateSubnet01
+      RouteTableId: !Ref PrivateRouteTable01
+  PrivateRouteTable02:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref "VPC"
+      Tags:
+        - Key: Name
+          Value: !Sub "${ApplicationName}-priv-rtb-02"
+  PrivateRoute02:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable02
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NatGateway02
+  PrivateRouteTable02Association:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PrivateSubnet02
+      RouteTableId: !Ref PrivateRouteTable02
+
+  # load balancing
+  LoadBalancerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub "${ApplicationName}-alb-sg"
+      GroupDescription: allows access to web from internet
+      VpcId: !Ref "VPC"
+      SecurityGroupIngress:
+        - CidrIp: 0.0.0.0/0
+          IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+        - CidrIp: 0.0.0.0/0
+          IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+      Tags:
+        - Key: Name
+          Value: !Sub "${ApplicationName}-alb-sg"
+  LoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Scheme: internet-facing
+      LoadBalancerAttributes:
+        - Key: idle_timeout.timeout_seconds
+          Value: 60
+      Subnets:
+        - !Ref "PublicSubnet01"
+        - !Ref "PublicSubnet02"
+      SecurityGroups: [!Ref "LoadBalancerSecurityGroup"]
+      Tags:
+        - Key: Name
+          Value: !Sub "${ApplicationName}-alb"
+  TargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: !Sub "${ApplicationName}-tg"
+      TargetType: ip
+      Protocol: HTTP
+      Port: !FindInMap ["ApiMap", "Api", "Port"]
+      VpcId: !Ref "VPC"
+      HealthCheckIntervalSeconds: 30
+      HealthCheckPath: /healthcheck
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 3
+      HealthyThresholdCount: 3
+      UnhealthyThresholdCount: 3
+      TargetGroupAttributes:
+        - Key: deregistration_delay.timeout_seconds
+          Value: 30
+      Tags:
+        - Key: Name
+          Value: !Sub "${ApplicationName}-tg"
+  LoadBalancerHTTPSListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref "LoadBalancer"
+      Protocol: HTTPS
+      Port: 443
+      Certificates:
+        - CertificateArn: !Ref TLSCertificateARN
+      DefaultActions:
+        - Type: "forward"
+          TargetGroupArn: !Ref "TargetGroup"
+  LoadBalancerHTTPListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref "LoadBalancer"
+      Protocol: HTTP
+      Port: 80
+      DefaultActions:
+        - Order: 1
+          Type: "redirect"
+          RedirectConfig:
+            Path: "/#{path}"
+            Host: "#{host}"
+            Query: "#{query}"
+            Protocol: "HTTPS"
+            StatusCode: "HTTP_301"
+            Port: "443"
+
+  # DynamoDB
+  UsersDynamoDBTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: users
+      AttributeDefinitions:
+        - AttributeName: username
+          AttributeType: S
+      KeySchema:
+        - AttributeName: username
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+  FavoriteCountriesDynamoDBTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: favorite-countries
+      AttributeDefinitions:
+        - AttributeName: username
+          AttributeType: S
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: username
+          KeyType: HASH
+        - AttributeName: id
+          KeyType: RANGE
+      BillingMode: PAY_PER_REQUEST
+  FavoriteLocationsDynamoDBTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: favorite-locations
+      AttributeDefinitions:
+        - AttributeName: username
+          AttributeType: S
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: username
+          KeyType: HASH
+        - AttributeName: id
+          KeyType: RANGE
+      BillingMode: PAY_PER_REQUEST
+
+  # ECS
+  LogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "${ApplicationName}-log-group"
+  ECSCluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: !Sub "${ApplicationName}-cluster"
+      Tags:
+        - Key: Name
+          Value: !Sub "${ApplicationName}-cluster"
+  TaskSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Access to the containers
+      VpcId: !Ref "VPC"
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 0
+          ToPort: 65535
+          SourceSecurityGroupId: !Ref "LoadBalancerSecurityGroup"
+      Tags:
+        - Key: Name
+          Value: !Sub "${ApplicationName}-task-sg"
+  TaskExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: TaskExecutionRole
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: TaskExecutionRolePolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - ecr:GetAuthorizationToken
+                  - ecr:BatchCheckLayerAvailability
+                  - ecr:GetDownloadUrlForLayer
+                  - ecr:BatchGetImage
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                  - ssm:GetParameter
+                  - ssm:GetParameters
+                Resource: "*"
+  TaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Sub "${ApplicationName}-td"
+      Cpu: 256
+      Memory: 512
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
+      ExecutionRoleArn: !Ref "TaskExecutionRole"
+      ContainerDefinitions:
+        - Name: globo-clima
+          Cpu: 256
+          Memory: 512
+          Image: !Ref "ImageUrl"
+          PortMappings:
+            - ContainerPort: !FindInMap ["ApiMap", "Api", "Port"]
+          Environment:
+            - Name: Kestrel__Endpoints__Http__Url
+              Value: !Sub
+                - "http://*:${ApiPort}"
+                - ApiPort: !FindInMap ["ApiMap", "Api", "Port"]
+            - Name: Token__AccessTokenExpiresInSeconds
+              Value: !Ref "AccessTokenExpiresInSeconds"
+            - Name: DynamoDB__Region
+              Value: !Ref "AWS::Region"
+          Secrets:
+            - Name: Token__Key
+              ValueFrom: !Ref ApiTokenKeyArn
+            - Name: DynamoDB__AccessKeyId
+              ValueFrom: !Ref DynamoDBAccessKeyIdArn
+            - Name: DynamoDB__SecretAccessKey
+              ValueFrom: !Ref DynamoDBSecretAccessKeyArn
+          LogConfiguration:
+            LogDriver: "awslogs"
+            Options:
+              awslogs-group: !Ref LogGroup
+              awslogs-region: !Ref "AWS::Region"
+              awslogs-stream-prefix: !Ref ApplicationName
+      Tags:
+        - Key: Name
+          Value: !Sub "${ApplicationName}-td"
+  ECSService:
+    Type: AWS::ECS::Service
+    DependsOn: LoadBalancerHTTPSListener
+    Properties:
+      ServiceName: !Sub "${ApplicationName}-service"
+      Cluster: !Ref "ECSCluster"
+      LaunchType: FARGATE
+      TaskDefinition: !Ref "TaskDefinition"
+      DesiredCount: 2
+      HealthCheckGracePeriodSeconds: 30
+      DeploymentConfiguration:
+        MinimumHealthyPercent: 50
+        MaximumPercent: 150
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          SecurityGroups:
+            - !Ref "TaskSecurityGroup"
+          Subnets:
+            - !Ref "PrivateSubnet01"
+            - !Ref "PrivateSubnet02"
+      LoadBalancers:
+        - ContainerName: "globo-clima"
+          ContainerPort: !FindInMap ["ApiMap", "Api", "Port"]
+          TargetGroupArn: !Ref "TargetGroup"
+      Tags:
+        - Key: Name
+          Value: !Sub "${ApplicationName}-service"
+  ECSAutoScalingRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: application-autoscaling.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: ECSAutoScalingPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ecs:UpdateService
+                  - ecs:DescribeServices
+                  - application-autoscaling:RegisterScalableTarget
+                  - application-autoscaling:PutScalingPolicy
+                Resource: "*"
+  ECSServiceScalableTarget:
+    Type: AWS::ApplicationAutoScaling::ScalableTarget
+    DependsOn: ECSService
+    Properties:
+      MaxCapacity: 4
+      MinCapacity: 1
+      ResourceId: !Sub "service/${ECSCluster}/${ApplicationName}-service"
+      RoleARN: !GetAtt ECSAutoScalingRole.Arn
+      ScalableDimension: ecs:service:DesiredCount
+      ServiceNamespace: ecs
+  ECSServiceScalingPolicy:
+    Type: AWS::ApplicationAutoScaling::ScalingPolicy
+    Properties:
+      PolicyName: !Sub "${ApplicationName}-cpu-scaling-policy"
+      PolicyType: TargetTrackingScaling
+      ScalingTargetId: !Ref ECSServiceScalableTarget
+      TargetTrackingScalingPolicyConfiguration:
+        TargetValue: 70.0
+        PredefinedMetricSpecification:
+          PredefinedMetricType: ECSServiceAverageCPUUtilization
+        ScaleInCooldown: 300
+        ScaleOutCooldown: 300
+
+  # Pipeline
+  Repository:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: "vitormsp/globo-clima"
+  CodeBuildRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: CodeBuildRole
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: codebuild.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: CodeBuildPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:PutObject
+                  - s3:GetObjectVersion
+                  - s3:GetBucketAcl
+                  - s3:GetBucketLocation
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                  - ecr:GetAuthorizationToken
+                  - ecr:InitiateLayerUpload
+                  - ecr:UploadLayerPart
+                  - ecr:CompleteLayerUpload
+                  - ecr:BatchGetImage
+                  - ecr:BatchCheckLayerAvailability
+                  - ecr:GetDownloadUrlForLayer
+                  - ecr:PutImage
+                Resource: "*"
+  CodeBuild:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: !Sub "${ApplicationName}-build"
+      Source:
+        Type: CODEPIPELINE
+        BuildSpec: "api/buildspec.yml"
+      Artifacts:
+        Type: CODEPIPELINE
+      Environment:
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: "aws/codebuild/standard:5.0"
+        Type: LINUX_CONTAINER
+      ServiceRole: !GetAtt CodeBuildRole.Arn
+  CodePipelineRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: CodePipelineRole
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: codepipeline.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: CodePipelinePolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - codebuild:StartBuild
+                  - codebuild:BatchGetBuilds
+                  - codebuild:StartBuild
+                  - codebuild:BatchGetBuildBatches
+                  - codebuild:StartBuildBatch
+                  - ecs:*
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                  - codestar-connections:*
+                  - s3:GetObject
+                  - s3:PutObject
+                  - s3:GetObjectVersion
+                  - s3:GetBucketAcl
+                  - s3:GetBucketLocation
+                  - iam:PassRole
+                Resource: "*"
+  ArtifactsS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "vitormsp-artifacts-${AWS::AccountId}-${AWS::Region}"
+  CodePipeline:
+    Type: AWS::CodePipeline::Pipeline
+    DependsOn: ArtifactsS3Bucket
+    Properties:
+      Name: !Sub "${ApplicationName}-pipeline"
+      RoleArn: !GetAtt CodePipelineRole.Arn
+      ArtifactStore:
+        Type: S3
+        Location: !Ref ArtifactsS3Bucket
+      Stages:
+        - Name: Source
+          Actions:
+            - Name: GitHubSource
+              ActionTypeId:
+                Category: Source
+                Owner: AWS
+                Provider: CodeStarSourceConnection
+                Version: 1
+              OutputArtifacts:
+                - Name: SourceOutput
+              Configuration:
+                ConnectionArn: !Ref "GitHubConnectionArn"
+                FullRepositoryId: "vitor-msp/globo-clima"
+                BranchName: "main"
+              RunOrder: 1
+        - Name: Build
+          Actions:
+            - Name: CodeBuildAction
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Provider: CodeBuild
+                Version: 1
+              InputArtifacts:
+                - Name: SourceOutput
+              OutputArtifacts:
+                - Name: BuildOutput
+              Configuration:
+                ProjectName: !Ref "CodeBuild"
+              RunOrder: 1
+        - Name: Deploy
+          Actions:
+            - Name: ECSDeployAction
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Provider: ECS
+                Version: 1
+              InputArtifacts:
+                - Name: BuildOutput
+              Configuration:
+                ClusterName: !Ref "ECSCluster"
+                ServiceName: !Ref "ECSService"
+                FileName: "imagedefinitions.json"
+              RunOrder: 1
+
+Outputs:
+  ApiUrl:
+    Description: API public URL
+    Value: !Sub https://${LoadBalancer.DNSName}
