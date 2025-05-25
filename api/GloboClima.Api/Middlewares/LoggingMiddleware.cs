@@ -6,6 +6,11 @@ public class LoggingMiddleware(RequestDelegate next)
 
     public async Task InvokeAsync(HttpContext context)
     {
+        if (RequestIsHealthcheck(context))
+        {
+            await _next(context);
+            return;
+        }
         var start = DateTime.UtcNow;
         await _next(context);
         var duration = DateTime.UtcNow - start;
@@ -27,4 +32,7 @@ public class LoggingMiddleware(RequestDelegate next)
             $"{duration.TotalMilliseconds}ms";
         Console.WriteLine(log);
     }
+
+    private static bool RequestIsHealthcheck(HttpContext context)
+        => context.Request.Path.Equals("/healthcheck");
 }
