@@ -2,11 +2,10 @@ using System.Net;
 using Amazon.DynamoDBv2.Model;
 using GloboClima.Api.Exceptions;
 using GloboClima.Api.Presenters;
-using Microsoft.AspNetCore.Mvc;
 
 namespace GloboClima.Api.Middlewares;
 
-public class ExceptionMiddleware(RequestDelegate next) : ControllerBase
+public class ExceptionMiddleware(RequestDelegate next)
 {
     private readonly RequestDelegate _next = next;
 
