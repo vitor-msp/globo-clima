@@ -6,15 +6,15 @@ namespace GloboClima.Api.Schema;
 [DynamoDBTable("favorite-locations")]
 public class FavoriteLocation
 {
-    [DynamoDBHashKey]
+    [DynamoDBHashKey("username")]
     public required string Username { get; init; }
 
-    [DynamoDBRangeKey]
+    [DynamoDBRangeKey("id")]
     public Guid Id { get; init; } = Guid.NewGuid();
 
     private readonly int _lat;
 
-    [DynamoDBProperty]
+    [DynamoDBProperty("lat")]
     public required int Lat
     {
         get => _lat;
@@ -28,7 +28,7 @@ public class FavoriteLocation
 
     private readonly int _lon;
 
-    [DynamoDBProperty]
+    [DynamoDBProperty("lon")]
     public required int Lon
     {
         get => _lon;

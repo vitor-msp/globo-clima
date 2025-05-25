@@ -9,15 +9,15 @@ public partial class FavoriteCountry
 {
     private const string CiocPattern = @"^[A-Z|a-z]{3}$";
 
-    [DynamoDBHashKey]
+    [DynamoDBHashKey("username")]
     public required string Username { get; init; }
 
-    [DynamoDBRangeKey]
+    [DynamoDBRangeKey("id")]
     public Guid Id { get; init; } = Guid.NewGuid();
 
     private readonly string _cioc = "";
 
-    [DynamoDBProperty]
+    [DynamoDBProperty("cioc")]
     public required string Cioc
     {
         get => _cioc;

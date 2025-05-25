@@ -6,13 +6,13 @@ namespace GloboClima.Api.Schema;
 [DynamoDBTable("users")]
 public class User
 {
-    [DynamoDBHashKey]
+    [DynamoDBHashKey("username")]
     public required string Username { get; init; }
 
-    [DynamoDBProperty]
+    [DynamoDBProperty("name")]
     public required string Name { get; init; }
 
-    [DynamoDBProperty]
+    [DynamoDBProperty("password_hash")]
     public required string PasswordHash { get; init; }
 
     public bool PasswordIsCorrect(ITextHasherService textHasher, string password)
