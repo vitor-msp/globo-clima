@@ -24,11 +24,13 @@ public class ExceptionMiddleware(RequestDelegate next) : ControllerBase
 
     private static Task HandleException(HttpContext context, Exception error)
     {
+        Console.WriteLine(error.Message);
+        Console.WriteLine(error.StackTrace);
         var code = HttpStatusCode.InternalServerError;
         var errorMessage = error.Message;
         if (error is DomainException) code = HttpStatusCode.UnprocessableEntity;
-        if (error is UnauthorizeException) code = HttpStatusCode.Unauthorized;
-        if (error is ConditionalCheckFailedException)
+        else if (error is UnauthorizeException) code = HttpStatusCode.Unauthorized;
+        else if (error is ConditionalCheckFailedException)
         {
             code = HttpStatusCode.Conflict;
             errorMessage = "Username already in use.";
