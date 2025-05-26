@@ -19,7 +19,9 @@ public static class ProjectBuilderExtension
         services.AddSingleton<IDynamoDBContext>(dbContext);
         services.AddSingleton<ITokenService, TokenService>();
         services.AddSingleton<ITextHasherService, TextHasherService>();
+        services.AddSingleton<IHttpService, HttpService>();
         services.Configure<TokenConfiguration>(configuration.GetSection("Token"));
+        services.Configure<RestCountriesApiConfiguration>(configuration.GetSection("RestCountriesApi"));
         ConfigureToken(services, configuration);
     }
 
