@@ -1,26 +1,16 @@
-import { useEffect, useState } from "react";
-import { FavoriteCountry, getFavoriteCountries } from "../services/api";
+import { useContext } from "react";
+import { FavoriteCountriesContext } from "../context/FavoriteCountriesContext";
 
 export const FavoriteCountriesPage = () => {
-  const [favoriteCountries, setFavoriteCountries] = useState<FavoriteCountry[]>(
-    []
-  );
-
-  useEffect(() => {
-    (async () => {
-      const output = await getFavoriteCountries();
-      if (output.error) return alert("Error to get favorite countries.");
-      setFavoriteCountries(output.data);
-    })();
-  }, []);
+  const context = useContext(FavoriteCountriesContext);
 
   return (
     <div>
       <h1>Favorite Countries</h1>
 
       <ul>
-        {favoriteCountries.map((country) => (
-          <li>
+        {context.favoriteCountries.map((country) => (
+          <li key={country.id}>
             <div>
               <span>Cioc</span>
               <strong>{country.cioc}</strong>
