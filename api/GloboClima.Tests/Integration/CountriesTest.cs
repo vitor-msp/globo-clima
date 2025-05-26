@@ -39,4 +39,18 @@ public class CountriesTest
         Assert.Equal("R$", output.Currencies[0].Symbol);
         Assert.Equal("Brazilian real", output.Currencies[0].Name);
     }
+
+    [Fact]
+    public async Task ShouldNotGetCountryDemographicInformationForInvalidCioc()
+    {
+        _factory.HttpServiceMock
+            .Setup(x => x.GetAsync(It.IsAny<HttpClient>(), It.IsAny<string>()))
+            .ReturnsAsync(new HttpResponseMessage()
+            {
+                StatusCode = HttpStatusCode.NotFound
+            });
+        var cioc = "XYZ";
+        var response = await _httpClient.GetAsync($"/countries/{cioc}");
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
 }
