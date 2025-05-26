@@ -43,7 +43,7 @@ export type Location = {
   windSpeedInMeterPerSecond: number;
 };
 
-export const getLocations = async (
+export const getLocationWeatherInformation = async (
   lat: number,
   lon: number
 ): Promise<Output<Location>> => {
