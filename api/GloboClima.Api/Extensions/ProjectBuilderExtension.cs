@@ -22,6 +22,7 @@ public static class ProjectBuilderExtension
         services.AddSingleton<IHttpService, HttpService>();
         services.Configure<TokenConfiguration>(configuration.GetSection("Token"));
         services.Configure<RestCountriesApiConfiguration>(configuration.GetSection("RestCountriesApi"));
+        services.Configure<OpenWeatherMapConfiguration>(configuration.GetSection("OpenWeatherMap"));
         ConfigureToken(services, configuration);
     }
 

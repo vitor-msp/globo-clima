@@ -1,5 +1,3 @@
-using Moq;
-
 namespace GloboClima.Tests.Integration;
 
 public class CountriesTest

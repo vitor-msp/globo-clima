@@ -17,3 +17,6 @@ global using Microsoft.IdentityModel.Tokens;
 global using GloboClima.Api.Extensions;
 global using GloboClima.Api.Services.Contract;
 global using GloboClima.Api.Exceptions;
+global using Moq;
+global using System.Net.Http.Headers;
+global using Microsoft.Extensions.Options;

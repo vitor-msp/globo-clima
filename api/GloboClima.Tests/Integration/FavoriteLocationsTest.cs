@@ -1,6 +1,3 @@
-using System.Net.Http.Headers;
-using Microsoft.Extensions.Options;
-
 namespace GloboClima.Tests.Integration;
 
 public class FavoriteLocationsTest : BaseTest
