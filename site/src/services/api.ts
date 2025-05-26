@@ -60,3 +60,47 @@ export const getLocationWeatherInformation = async (
     },
   };
 };
+
+export type FavoriteCountry = {
+  username: string;
+  id: string;
+  cioc: string;
+};
+
+export const getFavoriteCountries = async (): Promise<
+  Output<FavoriteCountry[]>
+> => {
+  return {
+    error: false,
+    data: [
+      {
+        username: "fulano",
+        id: "568d91ac-7cfd-4584-85bb-bb4cdad365f4",
+        cioc: "GBR",
+      },
+    ],
+  };
+};
+
+export type FavoriteLocation = {
+  username: string;
+  id: string;
+  lat: number;
+  lon: number;
+};
+
+export const getFavoriteLocations = async (): Promise<
+  Output<FavoriteLocation[]>
+> => {
+  return {
+    error: false,
+    data: [
+      {
+        username: "fulano",
+        id: "f41a2d76-ebd4-4e94-baa9-00fe033a2801",
+        lat: 90,
+        lon: -107,
+      },
+    ],
+  };
+};
