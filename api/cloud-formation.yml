@@ -29,6 +29,10 @@ Parameters:
   GitHubConnectionArn:
     Type: String
     Description: GitHub connection ARN for CodePipeline
+  GitHubRepositoryName:
+    Type: String
+    Default: vitor-msp/globo-clima
+    Description: Api repository name on GitHub
 
 Mappings:
   VPCMap:
@@ -586,7 +590,7 @@ Resources:
   ArtifactsS3Bucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub "vitormsp-artifacts-${AWS::AccountId}-${AWS::Region}"
+      BucketName: !Sub "globoclima-artifacts-${AWS::AccountId}-${AWS::Region}"
   CodePipeline:
     Type: AWS::CodePipeline::Pipeline
     DependsOn: ArtifactsS3Bucket
@@ -608,8 +612,8 @@ Resources:
               OutputArtifacts:
                 - Name: SourceOutput
               Configuration:
-                ConnectionArn: !Ref "GitHubConnectionArn"
-                FullRepositoryId: "vitor-msp/globo-clima"
+                ConnectionArn: !Ref GitHubConnectionArn
+                FullRepositoryId: !Ref GitHubRepositoryName
                 BranchName: "main"
               RunOrder: 1
         - Name: Build
