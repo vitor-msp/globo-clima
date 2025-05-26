@@ -4,7 +4,7 @@ public class UsersTest : BaseTest
 {
     private readonly TextHasherService _textHasher = new();
     protected override string GetTableName() => "users";
-    protected override string GetPartitionKey() => "Username";
+    protected override string GetPartitionKey() => "username";
     protected override string? GetSortKey() => null;
 
     [Fact]

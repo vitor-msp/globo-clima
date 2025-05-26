@@ -17,7 +17,7 @@ public static class DynamoDbExtension
         if (region is null && serviceUrl is null)
             throw new Exception("Missing configure aws region or dynamodb service url.");
         var credentials = new BasicAWSCredentials(accessKeyId, secretAccessKey);
-        var config = region is null
+        var config = string.IsNullOrWhiteSpace(region)
             ? new AmazonDynamoDBConfig { ServiceURL = serviceUrl }
             : new AmazonDynamoDBConfig { RegionEndpoint = RegionEndpoint.GetBySystemName(region) };
         return new(credentials, config);

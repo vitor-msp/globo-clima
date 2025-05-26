@@ -8,8 +8,8 @@ public class FavoriteLocationsTest : BaseTest
     private readonly TokenService _tokenService;
     private readonly TextHasherService _textHasher = new();
     protected override string GetTableName() => "favorite-locations";
-    protected override string GetPartitionKey() => "Username";
-    protected override string? GetSortKey() => "Id";
+    protected override string GetPartitionKey() => "username";
+    protected override string? GetSortKey() => "id";
 
     public FavoriteLocationsTest()
     {

@@ -27,7 +27,7 @@ public class UsersController(IDynamoDBContext context, IAmazonDynamoDB dbClient,
         {
             TableName = "users",
             Item = _context.ToDocument(user).ToAttributeMap(),
-            ConditionExpression = "attribute_not_exists(Username)"
+            ConditionExpression = "attribute_not_exists(username)"
         });
         return Created();
     }
