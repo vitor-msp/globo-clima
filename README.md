@@ -34,7 +34,9 @@ A infraestrutura foi implementada na AWS com o CloudFormation, usando o DynamoDB
 ### Imagens Docker armazenadas no ECR
 ![print do ECR](assets/ecr.png)
 
----
+## Coverage
+
+Para ver detalhes da cobertura de testes, baixe este repositório e acesse no Browser [este arquivo](assets/coverage/index.html).
 
 ## Execução na AWS
 
@@ -48,8 +50,6 @@ Parâmetros:
 - DynamoDBSecretAccessKeyArn: Insira o ARN da secret access key neste parâmetro.
 - GitHubConnectionArn: Crie uma conexão na AWS com o GitHub e insira seu ARN neste parâmetro.
 - GitHubRepositoryName: Nome do repositório fork.
-
----
 
 ## Execução local
 
@@ -96,6 +96,6 @@ aws dynamodb create-table \
 dotnet run
 ```
 
-## Coverage
+## Documentação da API
 
-Para ver detalhes da cobertura de testes, baixe este repositório e acesse no Browser [este arquivo](assets/coverage/index.html).
+Para consultar a documentação da api e executar testes manuais, acesse no Browser [este link](http://localhost:5000/swagger).
