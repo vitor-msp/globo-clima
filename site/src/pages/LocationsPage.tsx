@@ -6,6 +6,7 @@ export const LocationsPage = () => {
   const [currentLat, setCurrentLat] = useState<number>(-19.9191248);
   const [currentLon, setCurrentLon] = useState<number>(-43.9386291);
   const [currentLocation, setCurrentLocation] = useState<Location | null>(null);
+  const [isFavorited, setIsFavorited] = useState<boolean>(false);
 
   const context = useContext(FavoriteLocationsContext);
 
@@ -19,6 +20,7 @@ export const LocationsPage = () => {
     if (output.error)
       return alert("Error to get location weather information.");
     setCurrentLocation(output.data);
+    checkIfIsFavorited();
   };
 
   const updateCurrentLat = (event: React.ChangeEvent<HTMLInputElement>) =>
@@ -35,6 +37,14 @@ export const LocationsPage = () => {
       lon: currentLon,
       id: output.data.favoriteLocationId,
     });
+    setIsFavorited(true);
+  };
+
+  const checkIfIsFavorited = () => {
+    const location = context.favoriteLocations.find(
+      (location) => location.lat === currentLat && location.lon === currentLon
+    );
+    setIsFavorited(Boolean(location));
   };
 
   return (
@@ -51,7 +61,9 @@ export const LocationsPage = () => {
 
       {Boolean(currentLocation) && (
         <div>
-          <div onClick={favorite}>Favorite</div>
+          {(isFavorited && <div>* Favorited</div>) || (
+            <div onClick={favorite}>Favorite</div>
+          )}
 
           <div>
             <span>Current UTC Time Unix</span>
