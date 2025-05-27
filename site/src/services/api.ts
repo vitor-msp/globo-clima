@@ -108,4 +108,16 @@ export const api = {
       },
     };
   },
+
+  createFavoriteLocation: async (
+    lat: number,
+    lon: number
+  ): Promise<Output<{ favoriteLocationId: string }>> => {
+    return {
+      error: false,
+      data: {
+        favoriteLocationId: "f41a2d76-ebd4-4e94-baa9-00fe033a2801",
+      },
+    };
+  },
 };

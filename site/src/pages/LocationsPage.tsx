@@ -1,15 +1,21 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { api, Location } from "../services/api";
+import { FavoriteLocationsContext } from "../context/FavoriteLocationsContext";
 
 export const LocationsPage = () => {
   const [currentLat, setCurrentLat] = useState<number>(-19.9191248);
   const [currentLon, setCurrentLon] = useState<number>(-43.9386291);
   const [currentLocation, setCurrentLocation] = useState<Location | null>(null);
 
+  const context = useContext(FavoriteLocationsContext);
+
   const searchLocation = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     event.stopPropagation();
-    const output = await api.getLocationWeatherInformation(currentLat, currentLon);
+    const output = await api.getLocationWeatherInformation(
+      currentLat,
+      currentLon
+    );
     if (output.error)
       return alert("Error to get location weather information.");
     setCurrentLocation(output.data);
@@ -20,6 +26,16 @@ export const LocationsPage = () => {
 
   const updateCurrentLon = (event: React.ChangeEvent<HTMLInputElement>) =>
     setCurrentLon(Number(event.target.value));
+
+  const favorite = async () => {
+    const output = await api.createFavoriteLocation(currentLat, currentLon);
+    if (output.error) return alert("Error to favorite location.");
+    context.addFavoriteLocation({
+      lat: currentLat,
+      lon: currentLon,
+      id: output.data.favoriteLocationId,
+    });
+  };
 
   return (
     <div>
@@ -35,6 +51,8 @@ export const LocationsPage = () => {
 
       {Boolean(currentLocation) && (
         <div>
+          <div onClick={favorite}>Favoritar</div>
+
           <div>
             <span>Current UTC Time Unix</span>
             <strong>{currentLocation?.currentUTCTimeUnix}</strong>

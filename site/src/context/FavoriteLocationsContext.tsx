@@ -4,11 +4,13 @@ import { FavoriteLocation } from "../services/api";
 export type FavoriteLocationsContextType = {
   setFavoriteLocations: (favoriteLocations: FavoriteLocation[]) => void;
   favoriteLocations: FavoriteLocation[];
+  addFavoriteLocation: (location: FavoriteLocation) => void;
 };
 
 const defaultContext: FavoriteLocationsContextType = {
   setFavoriteLocations: () => {},
   favoriteLocations: [],
+  addFavoriteLocation: () => {},
 };
 
 export const FavoriteLocationsContext =
@@ -19,11 +21,15 @@ export const FavoriteLocationsProvider = ({ children }: PropsWithChildren) => {
     FavoriteLocation[]
   >([]);
 
+  const addFavoriteLocation = (location: FavoriteLocation) =>
+    favoriteLocations.push(location);
+
   return (
     <FavoriteLocationsContext.Provider
       value={{
         setFavoriteLocations,
         favoriteLocations,
+        addFavoriteLocation,
       }}
     >
       {children}
