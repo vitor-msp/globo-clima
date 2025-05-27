@@ -3,11 +3,11 @@ namespace GloboClima.Tests.Unit;
 public class FavoriteLocationTest
 {
     [Theory]
-    [InlineData(-102)]
-    [InlineData(137)]
-    [InlineData(-91)]
-    [InlineData(91)]
-    public void ShouldNotCreateFavoriteLocationWithInvalidLat(int lat)
+    [InlineData(-102.021312)]
+    [InlineData(137.156151)]
+    [InlineData(-91.66)]
+    [InlineData(91.0)]
+    public void ShouldNotCreateFavoriteLocationWithInvalidLat(double lat)
     {
         Assert.Throws<DomainException>(() => new FavoriteLocation()
         {
@@ -18,11 +18,11 @@ public class FavoriteLocationTest
     }
 
     [Theory]
-    [InlineData(-190)]
-    [InlineData(192)]
-    [InlineData(-181)]
+    [InlineData(-190.01)]
+    [InlineData(192.12)]
+    [InlineData(-181.15697)]
     [InlineData(181)]
-    public void ShouldNotCreateFavoriteLocationWithInvalidLon(int lon)
+    public void ShouldNotCreateFavoriteLocationWithInvalidLon(double lon)
     {
         Assert.Throws<DomainException>(() => new FavoriteLocation()
         {

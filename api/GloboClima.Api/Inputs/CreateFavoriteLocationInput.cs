@@ -6,8 +6,8 @@ namespace GloboClima.Api.Inputs;
 
 public class CreateFavoriteLocationInput
 {
-    public required int Lat { get; init; }
-    public required int Lon { get; init; }
+    public required double Lat { get; init; }
+    public required double Lon { get; init; }
 
     public FavoriteLocation GetFavoriteLocation(ClaimsPrincipal user)
         => new()

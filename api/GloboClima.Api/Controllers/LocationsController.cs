@@ -1,4 +1,3 @@
-using System.Globalization;
 using System.Net;
 using GloboClima.Api.Configuration;
 using GloboClima.Api.DTOs;

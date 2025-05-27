@@ -12,10 +12,10 @@ public class FavoriteLocation
     [DynamoDBRangeKey("id")]
     public Guid Id { get; init; } = Guid.NewGuid();
 
-    private readonly int _lat;
+    private readonly double _lat;
 
     [DynamoDBProperty("lat")]
-    public required int Lat
+    public required double Lat
     {
         get => _lat;
         init
@@ -26,10 +26,10 @@ public class FavoriteLocation
         }
     }
 
-    private readonly int _lon;
+    private readonly double _lon;
 
     [DynamoDBProperty("lon")]
-    public required int Lon
+    public required double Lon
     {
         get => _lon;
         init
