@@ -1,14 +1,26 @@
 import { useContext } from "react";
 import { FavoriteLocationsContext } from "../context/FavoriteLocationsContext";
 import { api } from "../services/api";
+import { LoginContext } from "../context/LoginContext";
+import { useNavigate } from "react-router-dom";
 
 export const FavoriteLocationsPage = () => {
-  const context = useContext(FavoriteLocationsContext);
+  const favoriteLocationsContext = useContext(FavoriteLocationsContext);
+  const loginContext = useContext(LoginContext);
+
+  const navigate = useNavigate();
 
   const unfavorite = async (locationId: string) => {
-    const output = await api.removeFavoriteLocation(locationId);
+    if (!Boolean(loginContext.accessToken)) {
+      alert("You must login.");
+      return navigate("/login");
+    }
+    const output = await api.removeFavoriteLocation(
+      locationId,
+      loginContext.accessToken!
+    );
     if (output.error) return alert("Error to unfavorite location.");
-    context.removeFavoriteLocation(locationId);
+    favoriteLocationsContext.removeFavoriteLocation(locationId);
   };
 
   return (
@@ -16,7 +28,7 @@ export const FavoriteLocationsPage = () => {
       <h1>Favorite Locations</h1>
 
       <ul>
-        {context.favoriteLocations.map((location) => (
+        {favoriteLocationsContext.favoriteLocations.map((location) => (
           <li key={location.id}>
             <div onClick={() => unfavorite(location.id)}>Unfavorite</div>
 

@@ -1,6 +1,8 @@
 import { useContext, useState } from "react";
 import { api, Location } from "../services/api";
 import { FavoriteLocationsContext } from "../context/FavoriteLocationsContext";
+import { LoginContext } from "../context/LoginContext";
+import { useNavigate } from "react-router-dom";
 
 export const LocationsPage = () => {
   const [currentLat, setCurrentLat] = useState<number>(-19.9191248);
@@ -8,7 +10,10 @@ export const LocationsPage = () => {
   const [currentLocation, setCurrentLocation] = useState<Location | null>(null);
   const [isFavorited, setIsFavorited] = useState<boolean>(false);
 
-  const context = useContext(FavoriteLocationsContext);
+  const favoriteLocationsContext = useContext(FavoriteLocationsContext);
+  const loginContext = useContext(LoginContext);
+
+  const navigate = useNavigate();
 
   const searchLocation = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -30,12 +35,19 @@ export const LocationsPage = () => {
     setCurrentLon(Number(event.target.value));
 
   const favorite = async () => {
-    const output = await api.createFavoriteLocation({
-      lat: currentLat,
-      lon: currentLon,
-    });
+    if (!Boolean(loginContext.accessToken)) {
+      alert("You must login.");
+      return navigate("/login");
+    }
+    const output = await api.createFavoriteLocation(
+      {
+        lat: currentLat,
+        lon: currentLon,
+      },
+      loginContext.accessToken!
+    );
     if (output.error) return alert("Error to favorite location.");
-    context.addFavoriteLocation({
+    favoriteLocationsContext.addFavoriteLocation({
       lat: currentLat,
       lon: currentLon,
       id: output.data.favoriteLocationId,
@@ -44,7 +56,7 @@ export const LocationsPage = () => {
   };
 
   const checkIfIsFavorited = () => {
-    const location = context.favoriteLocations.find(
+    const location = favoriteLocationsContext.favoriteLocations.find(
       (location) => location.lat === currentLat && location.lon === currentLon
     );
     setIsFavorited(Boolean(location));

@@ -1,13 +1,18 @@
 import { useContext, useState } from "react";
 import { Country, api } from "../services/api";
 import { FavoriteCountriesContext } from "../context/FavoriteCountriesContext";
+import { LoginContext } from "../context/LoginContext";
+import { useNavigate } from "react-router-dom";
 
 export const CountriesPage = () => {
   const [currentCioc, setCurrentCioc] = useState<string>("BRA");
   const [currentCountry, setCurrentCountry] = useState<Country | null>(null);
   const [isFavorited, setIsFavorited] = useState<boolean>(false);
 
-  const context = useContext(FavoriteCountriesContext);
+  const favoriteCountriesContext = useContext(FavoriteCountriesContext);
+  const loginContext = useContext(LoginContext);
+
+  const navigate = useNavigate();
 
   const searchCountry = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -23,9 +28,16 @@ export const CountriesPage = () => {
     setCurrentCioc(event.target.value);
 
   const favorite = async () => {
-    const output = await api.createFavoriteCountry({ cioc: currentCioc });
+    if (!Boolean(loginContext.accessToken)) {
+      alert("You must login.");
+      return navigate("/login");
+    }
+    const output = await api.createFavoriteCountry(
+      { cioc: currentCioc },
+      loginContext.accessToken!
+    );
     if (output.error) return alert("Error to favorite country.");
-    context.addFavoriteCountry({
+    favoriteCountriesContext.addFavoriteCountry({
       cioc: currentCioc,
       id: output.data.favoriteCountryId,
     });
@@ -33,7 +45,7 @@ export const CountriesPage = () => {
   };
 
   const checkIfIsFavorited = () => {
-    const country = context.favoriteCountries.find(
+    const country = favoriteCountriesContext.favoriteCountries.find(
       (country) => country.cioc === currentCioc
     );
     setIsFavorited(Boolean(country));

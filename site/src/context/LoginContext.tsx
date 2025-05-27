@@ -22,6 +22,12 @@ export const LoginProvider = ({ children }: PropsWithChildren) => {
     localStorage.removeItem("globo-clima-access-token");
   }, [accessToken]);
 
+  useEffect(() => {
+    const accessToken = localStorage.getItem("globo-clima-access-token");
+    if (!Boolean(accessToken)) return;
+    setAccessToken(accessToken);
+  }, []);
+
   return (
     <LoginContext.Provider value={{ accessToken, setAccessToken }}>
       {children}

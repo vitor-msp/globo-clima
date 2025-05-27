@@ -1,14 +1,26 @@
 import { useContext } from "react";
 import { FavoriteCountriesContext } from "../context/FavoriteCountriesContext";
 import { api } from "../services/api";
+import { useNavigate } from "react-router-dom";
+import { LoginContext } from "../context/LoginContext";
 
 export const FavoriteCountriesPage = () => {
-  const context = useContext(FavoriteCountriesContext);
+  const favoriteCountriesContext = useContext(FavoriteCountriesContext);
+  const loginContext = useContext(LoginContext);
+
+  const navigate = useNavigate();
 
   const unfavorite = async (countryId: string) => {
-    const output = await api.removeFavoriteCountry(countryId);
+    if (!Boolean(loginContext.accessToken)) {
+      alert("You must login.");
+      return navigate("/login");
+    }
+    const output = await api.removeFavoriteCountry(
+      countryId,
+      loginContext.accessToken!
+    );
     if (output.error) return alert("Error to unfavorite country.");
-    context.removeFavoriteCountry(countryId);
+    favoriteCountriesContext.removeFavoriteCountry(countryId);
   };
 
   return (
@@ -16,7 +28,7 @@ export const FavoriteCountriesPage = () => {
       <h1>Favorite Countries</h1>
 
       <ul>
-        {context.favoriteCountries.map((country) => (
+        {favoriteCountriesContext.favoriteCountries.map((country) => (
           <li key={country.id}>
             <div onClick={() => unfavorite(country.id)}>Unfavorite</div>
 
