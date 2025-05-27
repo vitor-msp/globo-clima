@@ -20,6 +20,9 @@ Parameters:
   ApiTokenKeyArn:
     Type: String
     Description: Parameter Store ARN of the api token key
+  OpenWeatherMapApiKeyArn:
+    Type: String
+    Description: Parameter Store ARN of the Open Weather Map api key
   DynamoDBAccessKeyIdArn:
     Type: String
     Description: Parameter Store ARN of the access key id for connect to DynamoDB
@@ -413,6 +416,8 @@ Resources:
           Secrets:
             - Name: Token__Key
               ValueFrom: !Ref ApiTokenKeyArn
+            - Name: OpenWeatherMap_ApiKey
+              ValueFrom: !Ref OpenWeatherMapApiKeyArn
             - Name: DynamoDB__AccessKeyId
               ValueFrom: !Ref DynamoDBAccessKeyIdArn
             - Name: DynamoDB__SecretAccessKey

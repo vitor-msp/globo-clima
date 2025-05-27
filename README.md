@@ -46,6 +46,7 @@ Parâmetros:
 - TLSCertificateARN: gere um certificado TLS, cadastre-o no ACM e insira seu ARN neste parâmetro.
 - AccessTokenExpiresInSeconds: tempo (em segundos) para expiração do token JWT.
 - ApiTokenKeyArn: crie um parâmetro no Paramter Store com a chave do token JWT e insira seu ARN neste parâmetro.
+- OpenWeatherMapApiKeyArn: crie um parâmetro no Paramter Store com a api key do OpenWeatherMap e insira seu ARN neste parâmetro.
 - DynamoDBAccessKeyIdArn: Insira o ARN do access key id neste parâmetro.
 - DynamoDBSecretAccessKeyArn: Insira o ARN da secret access key neste parâmetro.
 - GitHubConnectionArn: Crie uma conexão na AWS com o GitHub e insira seu ARN neste parâmetro.
