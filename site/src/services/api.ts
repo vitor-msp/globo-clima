@@ -38,6 +38,13 @@ export type FavoriteLocation = {
   lon: number;
 };
 
+export type SignupInput = {
+  name: string;
+  username: string;
+  password: string;
+  passwordConfirmation: string;
+};
+
 export const api = {
   getCountryDemographicInformation: async (
     cioc: string
@@ -98,9 +105,9 @@ export const api = {
     };
   },
 
-  createFavoriteCountry: async (
-    cioc: string
-  ): Promise<Output<{ favoriteCountryId: string }>> => {
+  createFavoriteCountry: async (input: {
+    cioc: string;
+  }): Promise<Output<{ favoriteCountryId: string }>> => {
     return {
       error: false,
       data: {
@@ -116,10 +123,10 @@ export const api = {
     };
   },
 
-  createFavoriteLocation: async (
-    lat: number,
-    lon: number
-  ): Promise<Output<{ favoriteLocationId: string }>> => {
+  createFavoriteLocation: async (input: {
+    lat: number;
+    lon: number;
+  }): Promise<Output<{ favoriteLocationId: string }>> => {
     return {
       error: false,
       data: {
@@ -129,6 +136,13 @@ export const api = {
   },
 
   removeFavoriteLocation: async (id: string): Promise<Output<void>> => {
+    return {
+      error: false,
+      data: undefined,
+    };
+  },
+
+  signup: async (input: SignupInput): Promise<Output<void>> => {
     return {
       error: false,
       data: undefined,

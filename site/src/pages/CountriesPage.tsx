@@ -23,7 +23,7 @@ export const CountriesPage = () => {
     setCurrentCioc(event.target.value);
 
   const favorite = async () => {
-    const output = await api.createFavoriteCountry(currentCioc);
+    const output = await api.createFavoriteCountry({ cioc: currentCioc });
     if (output.error) return alert("Error to favorite country.");
     context.addFavoriteCountry({
       cioc: currentCioc,
@@ -45,11 +45,16 @@ export const CountriesPage = () => {
 
       <div>
         <form action="" method="get" onSubmit={searchCountry}>
-          <input
-            type="search"
-            value={currentCioc}
-            onChange={updateCurrentCioc}
-          />
+          <div>
+            <label htmlFor="cioc">Cioc</label>
+            <input
+              type="search"
+              id="cioc"
+              value={currentCioc}
+              onChange={updateCurrentCioc}
+            />
+          </div>
+
           <input type="submit" value="Search Country" />
         </form>
       </div>

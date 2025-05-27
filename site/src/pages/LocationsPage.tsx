@@ -30,7 +30,10 @@ export const LocationsPage = () => {
     setCurrentLon(Number(event.target.value));
 
   const favorite = async () => {
-    const output = await api.createFavoriteLocation(currentLat, currentLon);
+    const output = await api.createFavoriteLocation({
+      lat: currentLat,
+      lon: currentLon,
+    });
     if (output.error) return alert("Error to favorite location.");
     context.addFavoriteLocation({
       lat: currentLat,
@@ -53,8 +56,26 @@ export const LocationsPage = () => {
 
       <div>
         <form action="" method="get" onSubmit={searchLocation}>
-          <input type="search" value={currentLat} onChange={updateCurrentLat} />
-          <input type="search" value={currentLon} onChange={updateCurrentLon} />
+          <div>
+            <label htmlFor="lat">Latitute</label>
+            <input
+              type="search"
+              id="lat"
+              value={currentLat}
+              onChange={updateCurrentLat}
+            />
+          </div>
+
+          <div>
+            <label htmlFor="lon">Longitude</label>
+            <input
+              type="search"
+              id="lon"
+              value={currentLon}
+              onChange={updateCurrentLon}
+            />
+          </div>
+
           <input type="submit" value="Search Location" />
         </form>
       </div>
