@@ -46,7 +46,7 @@ export const CountriesPage = () => {
 
       {Boolean(currentCountry) && (
         <div>
-          <div onClick={favorite}>Favoritar</div>
+          <div onClick={favorite}>Favorite</div>
 
           <div>
             <span>Common Name</span>

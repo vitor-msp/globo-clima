@@ -18,7 +18,7 @@ export const FavoriteCountriesPage = () => {
       <ul>
         {context.favoriteCountries.map((country) => (
           <li key={country.id}>
-            <div onClick={() => unfavorite(country.id)}>Desfavoritar</div>
+            <div onClick={() => unfavorite(country.id)}>Unfavorite</div>
 
             <div>
               <span>Cioc</span>

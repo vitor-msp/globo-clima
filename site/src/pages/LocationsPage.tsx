@@ -51,7 +51,7 @@ export const LocationsPage = () => {
 
       {Boolean(currentLocation) && (
         <div>
-          <div onClick={favorite}>Favoritar</div>
+          <div onClick={favorite}>Favorite</div>
 
           <div>
             <span>Current UTC Time Unix</span>
