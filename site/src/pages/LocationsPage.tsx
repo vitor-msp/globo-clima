@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { getLocationWeatherInformation, Location } from "../services/api";
+import { api, Location } from "../services/api";
 
 export const LocationsPage = () => {
   const [currentLat, setCurrentLat] = useState<number>(-19.9191248);
@@ -9,7 +9,7 @@ export const LocationsPage = () => {
   const searchLocation = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     event.stopPropagation();
-    const output = await getLocationWeatherInformation(currentLat, currentLon);
+    const output = await api.getLocationWeatherInformation(currentLat, currentLon);
     if (output.error)
       return alert("Error to get location weather information.");
     setCurrentLocation(output.data);

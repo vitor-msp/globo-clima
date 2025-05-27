@@ -1,14 +1,17 @@
-import { useState } from "react";
-import { Country, getCountryDemographicInformation } from "../services/api";
+import { useContext, useState } from "react";
+import { Country, api } from "../services/api";
+import { FavoriteCountriesContext } from "../context/FavoriteCountriesContext";
 
 export const CountriesPage = () => {
   const [currentCioc, setCurrentCioc] = useState<string>("BRA");
   const [currentCountry, setCurrentCountry] = useState<Country | null>(null);
 
+  const context = useContext(FavoriteCountriesContext);
+
   const searchCountry = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     event.stopPropagation();
-    const output = await getCountryDemographicInformation(currentCioc);
+    const output = await api.getCountryDemographicInformation(currentCioc);
     if (output.error)
       return alert("Error to get country demographic information.");
     setCurrentCountry(output.data);
@@ -16,6 +19,15 @@ export const CountriesPage = () => {
 
   const updateCurrentCioc = (event: React.ChangeEvent<HTMLInputElement>) =>
     setCurrentCioc(event.target.value);
+
+  const favorite = async () => {
+    const output = await api.createFavoriteCountry(currentCioc);
+    if (output.error) return alert("Error to favorite country.");
+    context.addFavoriteCountry({
+      cioc: currentCioc,
+      id: output.data.favoriteCountryId,
+    });
+  };
 
   return (
     <div>
@@ -34,6 +46,8 @@ export const CountriesPage = () => {
 
       {Boolean(currentCountry) && (
         <div>
+          <div onClick={favorite}>Favoritar</div>
+
           <div>
             <span>Common Name</span>
             <strong>{currentCountry?.commonName}</strong>

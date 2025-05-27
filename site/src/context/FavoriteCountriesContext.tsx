@@ -4,11 +4,13 @@ import { FavoriteCountry } from "../services/api";
 export type FavoriteCountriesContextType = {
   setFavoriteCountries: (favoriteCountries: FavoriteCountry[]) => void;
   favoriteCountries: FavoriteCountry[];
+  addFavoriteCountry: (country: FavoriteCountry) => void;
 };
 
 const defaultContext: FavoriteCountriesContextType = {
   setFavoriteCountries: () => {},
   favoriteCountries: [],
+  addFavoriteCountry: () => {},
 };
 
 export const FavoriteCountriesContext =
@@ -19,11 +21,15 @@ export const FavoriteCountriesProvider = ({ children }: PropsWithChildren) => {
     []
   );
 
+  const addFavoriteCountry = (country: FavoriteCountry) =>
+    favoriteCountries.push(country);
+
   return (
     <FavoriteCountriesContext.Provider
       value={{
         setFavoriteCountries,
         favoriteCountries,
+        addFavoriteCountry,
       }}
     >
       {children}
