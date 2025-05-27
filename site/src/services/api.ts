@@ -123,8 +123,15 @@ export const api = {
     return {
       error: false,
       data: {
-        favoriteLocationId: "f41a2d76-ebd4-4e94-baa9-00fe033a2801",
+        favoriteLocationId: "f41a2d76-ebd4-4e94-baa9-00fe033a2802",
       },
+    };
+  },
+
+  removeFavoriteLocation: async (id: string): Promise<Output<void>> => {
+    return {
+      error: false,
+      data: undefined,
     };
   },
 };
