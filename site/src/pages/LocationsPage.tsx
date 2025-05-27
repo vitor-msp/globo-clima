@@ -5,8 +5,8 @@ import { LoginContext } from "../context/LoginContext";
 import { useNavigate } from "react-router-dom";
 
 export const LocationsPage = () => {
-  const [currentLat, setCurrentLat] = useState<number>(-20);
-  const [currentLon, setCurrentLon] = useState<number>(-44);
+  const [currentLat, setCurrentLat] = useState<number>(-19.92);
+  const [currentLon, setCurrentLon] = useState<number>(-43.94);
   const [currentLocation, setCurrentLocation] = useState<Location | null>(null);
   const [isFavorited, setIsFavorited] = useState<boolean>(false);
 
@@ -75,9 +75,9 @@ export const LocationsPage = () => {
               id="lat"
               value={currentLat}
               onChange={updateCurrentLat}
-              min={-90}
-              max={90}
-              step={1}
+              min={-90.0}
+              max={90.0}
+              step={0.01}
             />
           </div>
 
@@ -88,9 +88,9 @@ export const LocationsPage = () => {
               id="lon"
               value={currentLon}
               onChange={updateCurrentLon}
-              min={-180}
-              max={180}
-              step={1}
+              min={-180.0}
+              max={180.0}
+              step={0.01}
             />
           </div>
 
