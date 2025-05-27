@@ -45,6 +45,11 @@ export type SignupInput = {
   passwordConfirmation: string;
 };
 
+export type LoginInput = {
+  username: string;
+  password: string;
+};
+
 export const api = {
   getCountryDemographicInformation: async (
     cioc: string
@@ -146,6 +151,15 @@ export const api = {
     return {
       error: false,
       data: undefined,
+    };
+  },
+
+  login: async (
+    input: LoginInput
+  ): Promise<Output<{ accessToken: string }>> => {
+    return {
+      error: false,
+      data: { accessToken: "any-jwt" },
     };
   },
 };
