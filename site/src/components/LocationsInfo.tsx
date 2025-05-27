@@ -47,10 +47,14 @@ export const LocationsInfo: React.FC<LocationsInfoProps> = ({
 
   return (
     (Boolean(currentLocation) && (
-      <div>
-        {(isFavorited && <div>* Favorited</div>) || (
-          <div onClick={favorite}>Favorite</div>
-        )}
+      <div className="info">
+        <div className="favorite-div">
+          {(isFavorited && <span className="favorited">Favorited</span>) || (
+            <span onClick={favorite} className="favorite">
+              Favorite
+            </span>
+          )}
+        </div>
 
         <div>
           <span>Current UTC Time Unix</span>

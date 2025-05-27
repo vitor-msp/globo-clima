@@ -40,12 +40,16 @@ export const CountriesInfo: React.FC<CountriesInfoProps> = ({
   };
 
   return (
-    <div>
+    <div className="info">
       {Boolean(currentCountry) && (
         <div>
-          {(isFavorited && <div>* Favorited</div>) || (
-            <div onClick={favorite}>Favorite</div>
-          )}
+          <div className="favorite-div">
+            {(isFavorited && <span className="favorited">Favorited</span>) || (
+              <span onClick={favorite} className="favorite">
+                Favorite
+              </span>
+            )}
+          </div>
 
           <div>
             <span>Common Name</span>
@@ -75,7 +79,7 @@ export const CountriesInfo: React.FC<CountriesInfoProps> = ({
           <div>
             <span>Currencies</span>
             {(currentCountry !== null && (
-              <ul>
+              <ul className="currencies">
                 {currentCountry.currencies.map((currency) => (
                   <li>
                     <div>
