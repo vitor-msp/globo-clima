@@ -5,6 +5,7 @@ import { FavoriteCountriesContext } from "../context/FavoriteCountriesContext";
 export const CountriesPage = () => {
   const [currentCioc, setCurrentCioc] = useState<string>("BRA");
   const [currentCountry, setCurrentCountry] = useState<Country | null>(null);
+  const [isFavorited, setIsFavorited] = useState<boolean>(false);
 
   const context = useContext(FavoriteCountriesContext);
 
@@ -15,6 +16,7 @@ export const CountriesPage = () => {
     if (output.error)
       return alert("Error to get country demographic information.");
     setCurrentCountry(output.data);
+    checkIfIsFavorited();
   };
 
   const updateCurrentCioc = (event: React.ChangeEvent<HTMLInputElement>) =>
@@ -27,6 +29,14 @@ export const CountriesPage = () => {
       cioc: currentCioc,
       id: output.data.favoriteCountryId,
     });
+    setIsFavorited(true);
+  };
+
+  const checkIfIsFavorited = () => {
+    const country = context.favoriteCountries.find(
+      (country) => country.cioc === currentCioc
+    );
+    setIsFavorited(Boolean(country));
   };
 
   return (
@@ -46,7 +56,9 @@ export const CountriesPage = () => {
 
       {Boolean(currentCountry) && (
         <div>
-          <div onClick={favorite}>Favorite</div>
+          {(isFavorited && <div>* Favorited</div>) || (
+            <div onClick={favorite}>Favorite</div>
+          )}
 
           <div>
             <span>Common Name</span>
