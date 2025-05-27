@@ -109,6 +109,13 @@ export const api = {
     };
   },
 
+  removeFavoriteCountry: async (id: string): Promise<Output<void>> => {
+    return {
+      error: false,
+      data: undefined,
+    };
+  },
+
   createFavoriteLocation: async (
     lat: number,
     lon: number
