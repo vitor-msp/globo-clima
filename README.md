@@ -3,6 +3,7 @@
 Foi desenvolvida uma api para consulta de dados climáticos de um endereço e dados demográficos de um país, com opções de favoritar.
 A api foi construída em .Net 8.0, TDD usando xUnit, autenticação com JWT e documentada com Swagger.
 A infraestrutura foi implementada na AWS com o CloudFormation, usando o DynamoDB para armazenamento, ALB e ECS para escalabilidade, Code Pipeline para CI/CD e CloudWatch para observabilidade.
+O frontend foi desenvolvido em React.
 
 ### Coverage dos testes na api
 ![print do coverage](assets/coverage.png)
@@ -100,3 +101,15 @@ dotnet run
 ## Documentação da API
 
 Para consultar a documentação da api e executar testes manuais, acesse no Browser [este link](http://localhost:5000/swagger).
+
+## Frontend
+
+Para executar o frontend, acesse *site/*, crie um arquivo .env a partir do arquivo .env.example, adicione o link da api e rode os seguintes comandos:
+
+```
+npm i
+```
+
+```
+npm start 
+```
