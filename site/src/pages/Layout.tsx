@@ -42,7 +42,7 @@ export const Layout: React.FC<LayoutProps> = ({ child }) => {
       if (!Boolean(loginContext.accessToken)) return;
       await Promise.all([loadFavoriteCountries(), loadFavoriteLocations()]);
     })();
-  }, []);
+  }, [loginContext.accessToken]);
 
   return (
     <div>

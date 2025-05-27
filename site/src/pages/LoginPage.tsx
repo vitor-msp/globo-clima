@@ -22,7 +22,7 @@ export const LoginPage = () => {
     event.stopPropagation();
     const output = await api.login(input);
     if (output.error) return alert("Error to sign up.");
-    loginContext.setAccessToken(output.data.accessToken);
+    loginContext.login(output.data.accessToken);
   };
 
   useEffect(() => {
